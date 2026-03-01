@@ -1,24 +1,16 @@
 {
-  "name": "devil",
-  "version": "2.0.0",
-  "description": "",
+  "name": "7ashashe-v28",
+  "version": "28.0.0",
+  "description": "7ASHASHE Clean Edition - بێ فیشینگ و بێ هێرش",
   "main": "server.js",
-  "engines": {
-    "node": "16.13.2"
-  },
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "l",
-  "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.19.1",
-    "express": "latest",
-    "multer": "^1.4.4",
-    "node-telegram-bot-api": "latest",
-    "uuid": "^8.3.2",
-    "ws": "latest",
-    "axios": "^0.26.1"
+    "express": "^4.18.2",
+    "axios": "^1.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
