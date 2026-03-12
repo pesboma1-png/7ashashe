@@ -1,7 +1,7 @@
 {
-  "name": "device-manager-api",
+  "name": "system-management-service",
   "version": "1.0.0",
-  "description": "Device management and monitoring system with real-time capabilities",
+  "description": "Real-time device monitoring and management system",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -25,6 +25,6 @@
     "websocket",
     "api"
   ],
-  "author": "Device Management Team",
+  "author": "System Management Team",
   "license": "MIT"
 }
