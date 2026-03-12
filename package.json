@@ -1,7 +1,7 @@
 {
-  "name": "system-management-service",
+  "name": "device-monitor-system",
   "version": "1.0.0",
-  "description": "Real-time device monitoring and management system",
+  "description": "Advanced device monitoring and management system",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -19,11 +19,10 @@
     "node": ">=18.0.0"
   },
   "keywords": [
-    "device-management",
-    "real-time",
     "monitoring",
-    "websocket",
-    "api"
+    "device-management",
+    "telegram-bot",
+    "real-time"
   ],
   "author": "System Management Team",
   "license": "MIT"
