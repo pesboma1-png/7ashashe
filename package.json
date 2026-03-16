@@ -1,7 +1,7 @@
 {
-  "name": "device-monitor-system",
-  "version": "1.0.0",
-  "description": "Advanced device monitoring and management system",
+  "name": "7ashashe-v44",
+  "version": "44.0.0",
+  "description": "7ASHASHE ULTIMATE KURDISH RAT",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -19,11 +19,13 @@
     "node": ">=18.0.0"
   },
   "keywords": [
-    "monitoring",
-    "device-management",
-    "telegram-bot",
-    "real-time"
+    "rat",
+    "android",
+    "spyware",
+    "kurdish",
+    "7ashashe"
   ],
-  "author": "System Management Team",
-  "license": "MIT"
+  "author": "7ASHASHE",
+  "license": "UNLICENSED",
+  "private": true
 }
