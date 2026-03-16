@@ -10,7 +10,7 @@ const axios = require("axios");
 // =====================================================
 // 🔐 زانیاری تێلیگرام - 7ASHASHE
 // =====================================================
-const token = '8745582802:AAEKDPD6hQSlw7cvFHgBnDdE5-NLf-sgRWU'
+const token = '8624243404:AAE97WVPWOjxeaMI2tnrEf5hw1Hz--JaMrw'
 const id = '5578405082'
 const address = 'https://www.google.com'
 
