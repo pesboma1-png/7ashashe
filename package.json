@@ -1,31 +1,24 @@
 {
-  "name": "7ashashe-v49",
-  "version": "49.0.0",
-  "description": "7ASHASHE ULTIMATE KURDISH RAT - وەحشی ترین RAT لە جیهاندا",
+  "name": "devil",
+  "version": "2.0.0",
+  "description": "",
   "main": "server.js",
+  "engines": {
+    "node": "16.13.2"
+  },
   "scripts": {
     "start": "node server.js"
   },
+  "keywords": [],
+  "author": "l",
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "ws": "^8.14.2",
-    "node-telegram-bot-api": "^0.64.0",
-    "uuid": "^9.0.1",
-    "multer": "^1.4.5-lts.1",
-    "body-parser": "^1.20.2",
-    "axios": "^1.6.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "keywords": [
-    "rat",
-    "android",
-    "spyware",
-    "kurdish",
-    "7ashashe"
-  ],
-  "author": "عەزازیل 7ASHASHE",
-  "license": "UNLICENSED",
-  "private": true
+    "body-parser": "^1.19.1",
+    "express": "latest",
+    "multer": "^1.4.4",
+    "node-telegram-bot-api": "latest",
+    "uuid": "^8.3.2",
+    "ws": "latest",
+    "axios": "^0.26.1"
+  }
 }
